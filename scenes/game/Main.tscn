@@ -1,0 +1,42 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/core/main.gd" id="1_3aw8l"]
+
+[node name="Main" type="Node2D"]
+script = ExtResource("1_3aw8l")
+
+[node name="World" type="Node2D" parent="."]
+
+[node name="UILayer" type="CanvasLayer" parent="."]
+
+[node name="HUD" type="Control" parent="UILayer"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="TopBar" type="HBoxContainer" parent="UILayer/HUD"]
+layout_mode = 0
+offset_left = 12.0
+offset_top = 8.0
+offset_right = 1268.0
+offset_bottom = 40.0
+theme_override_constants/separation = 24
+
+[node name="TitleLabel" type="Label" parent="UILayer/HUD/TopBar"]
+layout_mode = 2
+text = "Moon RTS"
+
+[node name="TickLabel" type="Label" parent="UILayer/HUD/TopBar"]
+layout_mode = 2
+text = "Tick: 0 (0s)"
+
+[node name="ResourcesLabel" type="Label" parent="UILayer/HUD"]
+layout_mode = 0
+offset_left = 12.0
+offset_top = 48.0
+offset_right = 1268.0
+offset_bottom = 72.0
+text = "Resources"
