@@ -1,11 +1,16 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://scripts/core/main.gd" id="1_3aw8l"]
+[ext_resource type="Script" path="res://scripts/core/world_spawner.gd" id="2_wv6qq"]
+[ext_resource type="Script" path="res://scripts/ui/selection_manager.gd" id="3_nl0u2"]
 
 [node name="Main" type="Node2D"]
 script = ExtResource("1_3aw8l")
 
 [node name="World" type="Node2D" parent="."]
+
+[node name="WorldSpawner" type="Node2D" parent="World"]
+script = ExtResource("2_wv6qq")
 
 [node name="UILayer" type="CanvasLayer" parent="."]
 
@@ -40,3 +45,12 @@ offset_top = 48.0
 offset_right = 1268.0
 offset_bottom = 72.0
 text = "Resources"
+
+[node name="SelectionManager" type="Control" parent="UILayer"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("3_nl0u2")

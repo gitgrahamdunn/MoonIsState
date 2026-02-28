@@ -20,6 +20,7 @@ func _process(_delta: float) -> void:
 func _bootstrap_smoke_test_state() -> void:
 	Sim.spawn_entity(&"command_dome", Vector2(320, 240), 1)
 	Sim.spawn_entity(&"worker", Vector2(400, 280), 1)
+	Sim.spawn_entity(&"soldier", Vector2(440, 320), 1)
 	Sim.set_resource(&"regolith", 250)
 	Sim.set_resource(&"metal", 125)
 	Sim.set_resource(&"power", 80)

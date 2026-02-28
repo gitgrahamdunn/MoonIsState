@@ -3,10 +3,12 @@ class_name Sim
 
 signal entity_spawned(entity_id: int)
 signal entity_despawned(entity_id: int)
+signal entity_updated(entity_id: int)
 signal resources_changed(resources: Dictionary)
 
 const TICKS_PER_SECOND := 20
 const DT := 1.0 / TICKS_PER_SECOND
+const MOVE_EPSILON := 4.0
 
 var next_entity_id: int = 1
 var entities: Dictionary = {}
@@ -39,15 +41,23 @@ func step() -> void:
 	var commands := CommandBus.drain()
 	for command in commands:
 		_apply_command(command)
+	_update_movement()
 
 func spawn_entity(entity_type: StringName, pos: Vector2, owner_id: int) -> int:
 	var entity_id := next_entity_id
 	next_entity_id += 1
+	var kind: StringName = &"building"
+	if DataDB.get_unit_def(entity_type) != null:
+		kind = &"unit"
 	entities[entity_id] = {
 		"id": entity_id,
-		"entity_type": entity_type,
-		"position": pos,
 		"owner_id": owner_id,
+		"def_id": entity_type,
+		"kind": kind,
+		"pos": pos,
+		"vel": Vector2.ZERO,
+		"move_target": Vector2.ZERO,
+		"has_move_target": false,
 	}
 	emit_signal("entity_spawned", entity_id)
 	return entity_id
@@ -74,19 +84,55 @@ func _apply_command(command: Dictionary) -> void:
 	var command_type: Variant = command.get("type")
 	if typeof(command_type) != TYPE_STRING and typeof(command_type) != TYPE_STRING_NAME:
 		return
+	if StringName(command_type) != &"move":
+		return
 
-	match StringName(command_type):
-		&"spawn_entity":
-			spawn_entity(
-				command.get("entity_type", &"unknown"),
-				command.get("position", Vector2.ZERO),
-				int(command.get("owner_id", 0))
-			)
-		&"despawn_entity":
-			despawn_entity(int(command.get("entity_id", -1)))
-		&"set_resource":
-			set_resource(StringName(command.get("name", &"")), int(command.get("value", 0)))
-		&"add_resource":
-			add_resource(StringName(command.get("name", &"")), int(command.get("delta", 0)))
-		_:
-			pass
+	var target_pos: Vector2 = command.get("target_pos", Vector2.ZERO)
+	var entity_ids: Array = command.get("entity_ids", [])
+	for entity_id_variant in entity_ids:
+		var entity_id := int(entity_id_variant)
+		if not entities.has(entity_id):
+			continue
+		var entity: Dictionary = entities[entity_id]
+		if entity.get("kind", &"") != &"unit":
+			continue
+		entity["move_target"] = target_pos
+		entity["has_move_target"] = true
+		entities[entity_id] = entity
+
+func _update_movement() -> void:
+	for entity_id in entities.keys():
+		var entity: Dictionary = entities[entity_id]
+		if not bool(entity.get("has_move_target", false)):
+			continue
+		if entity.get("kind", &"") != &"unit":
+			continue
+
+		var unit_def := DataDB.get_unit_def(entity.get("def_id", &""))
+		if unit_def == null:
+			continue
+
+		var current_pos: Vector2 = entity.get("pos", Vector2.ZERO)
+		var move_target: Vector2 = entity.get("move_target", current_pos)
+		var to_target: Vector2 = move_target - current_pos
+		var distance := to_target.length()
+		if distance <= MOVE_EPSILON:
+			entity["pos"] = move_target
+			entity["vel"] = Vector2.ZERO
+			entity["has_move_target"] = false
+			entities[entity_id] = entity
+			emit_signal("entity_updated", int(entity_id))
+			continue
+
+		var max_step := unit_def.move_speed * DT
+		var direction := to_target / distance
+		var step_distance := min(distance, max_step)
+		var new_pos := current_pos + direction * step_distance
+		entity["vel"] = direction * unit_def.move_speed
+		entity["pos"] = new_pos
+		if step_distance >= distance:
+			entity["pos"] = move_target
+			entity["vel"] = Vector2.ZERO
+			entity["has_move_target"] = false
+		entities[entity_id] = entity
+		emit_signal("entity_updated", int(entity_id))

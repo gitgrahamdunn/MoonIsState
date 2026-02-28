@@ -12,4 +12,4 @@ costs = {
 }
 build_time = 5.0
 hp = 120
-move_speed = 60.0
+move_speed = 100.0

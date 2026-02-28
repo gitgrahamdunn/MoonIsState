@@ -36,3 +36,9 @@ The main scene is `res://scenes/game/Main.tscn`.
 - Tick counter updated once per simulated second
 
 This gives a working loop for iterative feature development.
+
+## Controls
+
+- **Left click**: Select one unit.
+- **Left click + drag**: Box-select multiple units.
+- **Right click**: Issue a move command for selected units.
