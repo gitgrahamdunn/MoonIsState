@@ -6,4 +6,4 @@ class_name UnitDef
 @export var costs: Dictionary = {}
 @export var build_time: float = 1.0
 @export var hp: int = 100
-@export var move_speed: float = 50.0
+@export var move_speed: float = 120.0
