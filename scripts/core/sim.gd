@@ -5,6 +5,7 @@ signal entity_spawned(entity_id: int)
 signal entity_despawned(entity_id: int)
 signal entity_updated(entity_id: int)
 signal resources_changed(resources: Dictionary)
+signal tick_advanced(tick_count: int)
 
 const TICKS_PER_SECOND := 20
 const DT := 1.0 / TICKS_PER_SECOND
@@ -38,9 +39,12 @@ func reset() -> void:
 
 func step() -> void:
 	tick_count += 1
+	emit_signal("tick_advanced", tick_count)
+
 	var commands := CommandBus.drain()
 	for command in commands:
 		_apply_command(command)
+
 	_update_movement()
 
 func spawn_entity(entity_type: StringName, pos: Vector2, owner_id: int) -> int:

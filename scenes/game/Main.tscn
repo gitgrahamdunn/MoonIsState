@@ -1,8 +1,9 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://scripts/core/main.gd" id="1_3aw8l"]
 [ext_resource type="Script" path="res://scripts/core/world_spawner.gd" id="2_wv6qq"]
 [ext_resource type="Script" path="res://scripts/ui/selection_manager.gd" id="3_nl0u2"]
+[ext_resource type="Script" path="res://scripts/ui/selection_overlay.gd" id="4_5vx8x"]
 
 [node name="Main" type="Node2D"]
 script = ExtResource("1_3aw8l")
@@ -22,35 +23,41 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="TopBar" type="HBoxContainer" parent="UILayer/HUD"]
+[node name="TitleLabel" type="Label" parent="UILayer/HUD"]
 layout_mode = 0
 offset_left = 12.0
 offset_top = 8.0
-offset_right = 1268.0
-offset_bottom = 40.0
-theme_override_constants/separation = 24
-
-[node name="TitleLabel" type="Label" parent="UILayer/HUD/TopBar"]
-layout_mode = 2
+offset_right = 160.0
+offset_bottom = 32.0
 text = "Moon RTS"
 
-[node name="TickLabel" type="Label" parent="UILayer/HUD/TopBar"]
-layout_mode = 2
-text = "Tick: 0 (0s)"
+[node name="TickLabel" type="Label" parent="UILayer/HUD"]
+layout_mode = 0
+offset_left = 12.0
+offset_top = 32.0
+offset_right = 280.0
+offset_bottom = 56.0
+text = "Tick: 0 (0.0s)"
 
 [node name="ResourcesLabel" type="Label" parent="UILayer/HUD"]
 layout_mode = 0
 offset_left = 12.0
-offset_top = 48.0
-offset_right = 1268.0
-offset_bottom = 72.0
+offset_top = 60.0
+offset_right = 280.0
+offset_bottom = 160.0
 text = "Resources"
 
-[node name="SelectionManager" type="Control" parent="UILayer"]
+[node name="SelectionOverlay" type="Control" parent="UILayer"]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("4_5vx8x")
+
+[node name="SelectionManager" type="Node" parent="."]
 script = ExtResource("3_nl0u2")
+overlay_path = NodePath("../UILayer/SelectionOverlay")
+world_path = NodePath("../World")

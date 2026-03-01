@@ -35,6 +35,8 @@ func _update_from_sim() -> void:
 
 func _is_selected() -> bool:
 	for node in get_tree().get_nodes_in_group("selection_manager"):
+		if node.has_method("is_selected"):
+			return node.is_selected(entity_id)
 		if node.has_method("is_entity_selected"):
 			return node.is_entity_selected(entity_id)
 	return false
