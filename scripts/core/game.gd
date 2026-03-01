@@ -1,5 +1,4 @@
 extends Node
-class_name Game
 
 var current_match_id: String = ""
 
