@@ -2,6 +2,10 @@
 
 Base project skeleton for a top-down 2D RTS prototype on the moon.
 
+## Architecture Guardrails
+
+All Codex prompts for this repository must include and follow the architecture rules in [`ARCHITECTURE_RULES.md`](ARCHITECTURE_RULES.md).
+
 ## Requirements
 
 - [Godot Engine 4.x](https://godotengine.org/download)
