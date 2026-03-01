@@ -1,11 +1,12 @@
 extends Node2D
 
-const BODY_RADIUS := 12.0
+const BODY_RADIUS: float = 12.0
 
 @export var entity_id: int = -1
 
+var selected: bool = false
+
 @onready var sprite: Sprite2D = $Sprite2D
-@onready var selection_ring: Node2D = $SelectionRing
 
 func _ready() -> void:
 	add_to_group("unit_views")
@@ -16,9 +17,21 @@ func _ready() -> void:
 func _exit_tree() -> void:
 	remove_from_group("unit_views")
 
-func _process(_delta: float) -> void:
-	if is_instance_valid(selection_ring):
-		selection_ring.call("set_selected", _is_selected())
+func get_entity_id() -> int:
+	return entity_id
+
+func get_world_pos() -> Vector2:
+	return global_position
+
+func set_selected(v: bool) -> void:
+	if selected == v:
+		return
+	selected = v
+	queue_redraw()
+
+func _draw() -> void:
+	if selected:
+		draw_arc(Vector2.ZERO, 26.0, 0.0, TAU, 48, Color(1.0, 1.0, 1.0, 1.0), 2.0)
 
 func _on_entity_updated(updated_entity_id: int) -> void:
 	if updated_entity_id != entity_id:
@@ -28,24 +41,19 @@ func _on_entity_updated(updated_entity_id: int) -> void:
 func _update_from_sim() -> void:
 	if entity_id < 0:
 		return
-	var entity := Sim.get_entity(entity_id)
+	var entity: Dictionary = Sim.get_entity(entity_id)
 	if entity.is_empty():
 		return
-	global_position = entity.get("pos", global_position)
-
-func _is_selected() -> bool:
-	for node in get_tree().get_nodes_in_group("selection_manager"):
-		if node.has_method("is_selected"):
-			return node.is_selected(entity_id)
-		if node.has_method("is_entity_selected"):
-			return node.is_entity_selected(entity_id)
-	return false
+	var pos: Vector2 = entity.get("pos", global_position) as Vector2
+	global_position = pos
 
 func _ensure_placeholder_texture() -> void:
 	if sprite.texture != null:
+		sprite.centered = true
 		return
-	var image := Image.create(int(BODY_RADIUS * 2.0), int(BODY_RADIUS * 2.0), false, Image.FORMAT_RGBA8)
+	var diameter: int = int(BODY_RADIUS * 2.0)
+	var image: Image = Image.create(diameter, diameter, false, Image.FORMAT_RGBA8)
 	image.fill(Color(0.9, 0.9, 1.0, 1.0))
-	var texture := ImageTexture.create_from_image(image)
+	var texture: ImageTexture = ImageTexture.create_from_image(image)
 	sprite.texture = texture
 	sprite.centered = true

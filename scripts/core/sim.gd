@@ -6,9 +6,9 @@ signal entity_updated(entity_id: int)
 signal resources_changed(resources: Dictionary)
 signal tick_advanced(tick_count: int)
 
-const TICKS_PER_SECOND := 20
-const DT := 1.0 / TICKS_PER_SECOND
-const MOVE_EPSILON := 4.0
+const TICKS_PER_SECOND: int = 20
+const DT: float = 1.0 / float(TICKS_PER_SECOND)
+const MOVE_EPSILON: float = 4.0
 
 var next_entity_id: int = 1
 var entities: Dictionary = {}
@@ -40,14 +40,14 @@ func step() -> void:
 	tick_count += 1
 	emit_signal("tick_advanced", tick_count)
 
-	var commands := CommandBus.drain()
+	var commands: Array[Dictionary] = CommandBus.drain()
 	for command in commands:
 		_apply_command(command)
 
 	_update_movement()
 
 func spawn_entity(entity_type: StringName, pos: Vector2, owner_id: int) -> int:
-	var entity_id := next_entity_id
+	var entity_id: int = next_entity_id
 	next_entity_id += 1
 	var kind: StringName = &"building"
 	if DataDB.get_unit_def(entity_type) != null:
@@ -84,59 +84,58 @@ func add_resource(name: StringName, delta: int) -> void:
 	set_resource(name, int(resources.get(name, 0)) + delta)
 
 func _apply_command(command: Dictionary) -> void:
-	var command_type: Variant = command.get("type")
-	if typeof(command_type) != TYPE_STRING and typeof(command_type) != TYPE_STRING_NAME:
+	var command_type_variant: Variant = command.get("type")
+	if typeof(command_type_variant) != TYPE_STRING and typeof(command_type_variant) != TYPE_STRING_NAME:
 		return
-	if StringName(command_type) != &"move":
+	var command_type: StringName = StringName(command_type_variant)
+	if command_type != &"move":
 		return
 
-	var target_pos: Vector2 = command.get("target_pos", Vector2.ZERO)
-	var entity_ids: Array = command.get("entity_ids", [])
+	var target_pos: Vector2 = command.get("target_pos", Vector2.ZERO) as Vector2
+	var entity_ids: Array = command.get("entity_ids", []) as Array
 	for entity_id_variant in entity_ids:
-		var entity_id := int(entity_id_variant)
+		var entity_id: int = int(entity_id_variant)
 		if not entities.has(entity_id):
 			continue
-		var entity: Dictionary = entities[entity_id]
-		if entity.get("kind", &"") != &"unit":
+		var entity: Dictionary = entities[entity_id] as Dictionary
+		var kind: StringName = entity.get("kind", &"") as StringName
+		if kind != &"unit":
 			continue
 		entity["move_target"] = target_pos
 		entity["has_move_target"] = true
 		entities[entity_id] = entity
 
 func _update_movement() -> void:
-	for entity_id in entities.keys():
-		var entity: Dictionary = entities[entity_id]
-		if not bool(entity.get("has_move_target", false)):
+	for entity_id_variant in entities.keys():
+		var entity_id: int = int(entity_id_variant)
+		var entity: Dictionary = entities[entity_id] as Dictionary
+		var has_move_target: bool = bool(entity.get("has_move_target", false))
+		if not has_move_target:
 			continue
-		if entity.get("kind", &"") != &"unit":
+		var kind: StringName = entity.get("kind", &"") as StringName
+		if kind != &"unit":
 			continue
 
-		var unit_def := DataDB.get_unit_def(entity.get("def_id", &""))
+		var def_id: StringName = entity.get("def_id", &"") as StringName
+		var unit_def: UnitDef = DataDB.get_unit_def(def_id)
 		if unit_def == null:
 			continue
 
-		var current_pos: Vector2 = entity.get("pos", Vector2.ZERO) as Vector2
-		var move_target: Vector2 = entity.get("move_target", current_pos) as Vector2
-		var to_target: Vector2 = move_target - current_pos
-		var distance: float = to_target.length()
-		if distance <= MOVE_EPSILON:
-			entity["pos"] = move_target
-			entity["vel"] = Vector2.ZERO
-			entity["has_move_target"] = false
-			entities[entity_id] = entity
-			emit_signal("entity_updated", int(entity_id))
-			continue
-
-		var move_speed: float = float(unit_def.move_speed)
-		var max_step: float = move_speed * DT
-		var direction: Vector2 = to_target / distance
-		var step_distance: float = min(distance, max_step)
-		var new_pos: Vector2 = current_pos + direction * step_distance
-		entity["vel"] = direction * move_speed
+		var pos: Vector2 = entity.get("pos", Vector2.ZERO) as Vector2
+		var target: Vector2 = entity.get("move_target", pos) as Vector2
+		var speed: float = float(unit_def.move_speed)
+		var new_pos: Vector2 = pos.move_toward(target, speed * DT)
+		var moved: bool = new_pos.distance_to(pos) > 0.001
 		entity["pos"] = new_pos
-		if step_distance >= distance:
-			entity["pos"] = move_target
+		if moved:
+			var direction: Vector2 = (new_pos - pos).normalized()
+			entity["vel"] = direction * speed
+		else:
+			entity["vel"] = Vector2.ZERO
+		if new_pos.distance_to(target) <= MOVE_EPSILON:
+			entity["pos"] = target
 			entity["vel"] = Vector2.ZERO
 			entity["has_move_target"] = false
 		entities[entity_id] = entity
-		emit_signal("entity_updated", int(entity_id))
+		if moved or not bool(entity.get("has_move_target", false)):
+			emit_signal("entity_updated", entity_id)
