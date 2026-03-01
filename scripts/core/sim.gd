@@ -115,10 +115,10 @@ func _update_movement() -> void:
 		if unit_def == null:
 			continue
 
-		var current_pos: Vector2 = entity.get("pos", Vector2.ZERO)
-		var move_target: Vector2 = entity.get("move_target", current_pos)
+		var current_pos: Vector2 = entity.get("pos", Vector2.ZERO) as Vector2
+		var move_target: Vector2 = entity.get("move_target", current_pos) as Vector2
 		var to_target: Vector2 = move_target - current_pos
-		var distance := to_target.length()
+		var distance: float = to_target.length()
 		if distance <= MOVE_EPSILON:
 			entity["pos"] = move_target
 			entity["vel"] = Vector2.ZERO
@@ -127,11 +127,12 @@ func _update_movement() -> void:
 			emit_signal("entity_updated", int(entity_id))
 			continue
 
-		var max_step := unit_def.move_speed * DT
-		var direction := to_target / distance
-		var step_distance := min(distance, max_step)
-		var new_pos := current_pos + direction * step_distance
-		entity["vel"] = direction * unit_def.move_speed
+		var move_speed: float = float(unit_def.move_speed)
+		var max_step: float = move_speed * DT
+		var direction: Vector2 = to_target / distance
+		var step_distance: float = min(distance, max_step)
+		var new_pos: Vector2 = current_pos + direction * step_distance
+		entity["vel"] = direction * move_speed
 		entity["pos"] = new_pos
 		if step_distance >= distance:
 			entity["pos"] = move_target
