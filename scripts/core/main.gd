@@ -1,6 +1,6 @@
 extends Node2D
 
-const BUILD_STAMP: String = "dev-0009"
+const BUILD_STAMP: String = "dev-0010"
 
 @onready var title_label: Label = $UILayer/HUD/TitleLabel
 @onready var tick_label: Label = $UILayer/HUD/TickLabel
@@ -62,3 +62,6 @@ func _on_resources_changed(new_resources: Dictionary) -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if selection_manager != null and selection_manager.has_method("handle_unhandled_input"):
 		selection_manager.call("handle_unhandled_input", event)
+
+func get_world_mouse_pos() -> Vector2:
+	return get_global_mouse_position()

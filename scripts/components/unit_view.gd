@@ -4,7 +4,7 @@ const BODY_RADIUS: float = 12.0
 
 @export var entity_id: int = -1
 
-var selected: bool = false
+var _selected: bool = false
 
 @onready var sprite: Sprite2D = $Sprite2D
 
@@ -24,13 +24,13 @@ func get_world_pos() -> Vector2:
 	return global_position
 
 func set_selected(v: bool) -> void:
-	if selected == v:
+	if _selected == v:
 		return
-	selected = v
+	_selected = v
 	queue_redraw()
 
 func _draw() -> void:
-	if selected:
+	if _selected:
 		draw_arc(Vector2.ZERO, 26.0, 0.0, TAU, 48, Color(1.0, 1.0, 1.0, 1.0), 2.0)
 
 func _on_entity_updated(updated_entity_id: int) -> void:
@@ -41,11 +41,10 @@ func _on_entity_updated(updated_entity_id: int) -> void:
 func _update_from_sim() -> void:
 	if entity_id < 0:
 		return
-	var entity: Dictionary = Sim.get_entity(entity_id)
-	if entity.is_empty():
+	var e: Dictionary = Sim.get_entity(entity_id)
+	if e.is_empty():
 		return
-	var pos: Vector2 = entity.get("pos", global_position) as Vector2
-	global_position = pos
+	global_position = e.get("pos", global_position) as Vector2
 
 func _ensure_placeholder_texture() -> void:
 	if sprite.texture != null:
