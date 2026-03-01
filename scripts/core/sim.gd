@@ -1,5 +1,4 @@
 extends Node
-class_name Sim
 
 signal entity_spawned(entity_id: int)
 signal entity_despawned(entity_id: int)
