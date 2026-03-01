@@ -1,12 +1,21 @@
 extends Node2D
 
-const BUILD_STAMP: String = "dev-0008"
+const BUILD_STAMP: String = "dev-0009"
 
 @onready var title_label: Label = $UILayer/HUD/TitleLabel
 @onready var tick_label: Label = $UILayer/HUD/TickLabel
 @onready var resources_label: Label = $UILayer/HUD/ResourcesLabel
+@onready var selection_manager: Node = get_node_or_null("SelectionManager")
 
 func _ready() -> void:
+	var hud_node: Control = get_node_or_null("UILayer/HUD") as Control
+	if hud_node != null:
+		hud_node.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		for child_node: Node in hud_node.get_children():
+			if child_node is Control:
+				var child_control: Control = child_node as Control
+				child_control.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
 	title_label.text = "Moon RTS  [" + BUILD_STAMP + "]"
 	Sim.tick_advanced.connect(_on_tick_advanced)
 	Sim.resources_changed.connect(_on_resources_changed)
@@ -39,7 +48,7 @@ func log_startup_smoke_check() -> void:
 	print("Initial entity count after match start: ", Sim.entities.size())
 
 func _on_tick_advanced(new_tick_count: int) -> void:
-	var seconds := float(new_tick_count) / float(Sim.TICKS_PER_SECOND)
+	var seconds: float = float(new_tick_count) / float(Sim.TICKS_PER_SECOND)
 	tick_label.text = "Tick: %d (%.1fs)" % [new_tick_count, seconds]
 
 func _on_resources_changed(new_resources: Dictionary) -> void:
@@ -49,3 +58,7 @@ func _on_resources_changed(new_resources: Dictionary) -> void:
 		int(new_resources.get(&"power", 0)),
 		int(new_resources.get(&"oxygen", 0)),
 	]
+
+func _unhandled_input(event: InputEvent) -> void:
+	if selection_manager != null and selection_manager.has_method("handle_unhandled_input"):
+		selection_manager.call("handle_unhandled_input", event)
