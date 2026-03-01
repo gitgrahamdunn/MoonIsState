@@ -1,5 +1,4 @@
 extends Node
-class_name DataDB
 
 var units: Dictionary = {}
 var buildings: Dictionary = {}
