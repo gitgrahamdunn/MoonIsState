@@ -71,7 +71,7 @@ func _apply_selection_from_drag(append_selection: bool) -> void:
 
 	var selection_rect := Rect2(_drag_start_screen, _drag_end_screen - _drag_start_screen).abs()
 	for unit_view in _get_unit_views():
-		var screen_pos := get_viewport().get_canvas_transform() * unit_view.global_position
+		var screen_pos: Vector2 = get_viewport().get_canvas_transform() * unit_view.global_position
 		if selection_rect.has_point(screen_pos) and not next_selection.has(unit_view.entity_id):
 			next_selection.append(unit_view.entity_id)
 	selected_entity_ids = next_selection
@@ -80,7 +80,7 @@ func _pick_single_entity(screen_pos: Vector2) -> int:
 	var closest_entity_id := -1
 	var closest_distance := INF
 	for unit_view in _get_unit_views():
-		var unit_screen_pos := get_viewport().get_canvas_transform() * unit_view.global_position
+		var unit_screen_pos: Vector2 = get_viewport().get_canvas_transform() * unit_view.global_position
 		var distance := unit_screen_pos.distance_to(screen_pos)
 		if distance > CLICK_RADIUS:
 			continue
