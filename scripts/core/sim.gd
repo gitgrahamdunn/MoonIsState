@@ -46,17 +46,22 @@ func step() -> void:
 
 	_update_movement()
 
-func spawn_entity(entity_type: StringName, pos: Vector2, owner_id: int) -> int:
+func spawn_entity(def_id: StringName, pos: Vector2, owner_id: int, kind: StringName = &"") -> int:
 	var entity_id: int = next_entity_id
 	next_entity_id += 1
-	var kind: StringName = &"building"
-	if DataDB.get_unit_def(entity_type) != null:
-		kind = &"unit"
+	var resolved_kind: StringName = kind
+	if resolved_kind == &"":
+		if DataDB.units.has(def_id):
+			resolved_kind = &"unit"
+		elif DataDB.buildings.has(def_id):
+			resolved_kind = &"building"
+		else:
+			resolved_kind = &"unknown"
 	entities[entity_id] = {
 		"id": entity_id,
 		"owner_id": owner_id,
-		"def_id": entity_type,
-		"kind": kind,
+		"def_id": def_id,
+		"kind": resolved_kind,
 		"pos": pos,
 		"vel": Vector2.ZERO,
 		"move_target": Vector2.ZERO,

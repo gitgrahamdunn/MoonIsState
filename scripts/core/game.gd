@@ -5,6 +5,9 @@ var current_match_id: String = ""
 func start_new_match() -> void:
 	Sim.reset()
 	DataDB.load_all()
+	if DataDB.units.size() == 0 and DataDB.buildings.size() == 0 and DataDB.tech.size() == 0:
+		push_error("DataDB is empty; check res://data/*.tres are present and loader works.")
+		return
 	current_match_id = "new_match"
 
 	Sim.set_resource(&"regolith", 250)
@@ -12,8 +15,8 @@ func start_new_match() -> void:
 	Sim.set_resource(&"power", 80)
 	Sim.set_resource(&"oxygen", 40)
 
-	var command_dome_id: int = Sim.spawn_entity(&"command_dome", Vector2(200, 200), 1)
-	var worker_id: int = Sim.spawn_entity(&"worker", Vector2(320, 240), 1)
+	var command_dome_id: int = Sim.spawn_entity(&"command_dome", Vector2(200, 200), 1, &"building")
+	var worker_id: int = Sim.spawn_entity(&"worker", Vector2(320, 240), 1, &"unit")
 	_verify_spawn_kinds(command_dome_id, worker_id)
 
 func load_match(path: String) -> void:

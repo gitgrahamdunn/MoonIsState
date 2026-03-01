@@ -8,8 +8,9 @@ func load_all() -> void:
 	units.clear()
 	buildings.clear()
 	tech.clear()
+	print("[DataDB] scanning: ", "res://data")
 	_scan_dir("res://data")
-	print("DataDB loaded units=", units.size(), " buildings=", buildings.size(), " tech=", tech.size())
+	print("[DataDB] loaded counts units=", units.size(), " buildings=", buildings.size(), " tech=", tech.size())
 
 func get_unit_def(id: StringName) -> UnitDef:
 	return units.get(id)
@@ -21,34 +22,43 @@ func get_tech_def(id: StringName) -> TechDef:
 	return tech.get(id)
 
 func _scan_dir(path: String) -> void:
-	var dir := DirAccess.open(path)
+	var dir: DirAccess = DirAccess.open(path)
 	if dir == null:
 		push_warning("DataDB could not open directory: %s" % path)
 		return
 
 	dir.list_dir_begin()
-	var entry := dir.get_next()
-	while entry != "":
-		if entry.begins_with("."):
-			entry = dir.get_next()
+	var fname: String = dir.get_next()
+	while fname != "":
+		if fname.begins_with("."):
+			fname = dir.get_next()
 			continue
 
-		var full_path := path.path_join(entry)
+		var full_path: String = path.path_join(fname)
 		if dir.current_is_dir():
+			print("[DataDB] scanning: ", full_path)
 			_scan_dir(full_path)
-		elif entry.ends_with(".tres"):
+		elif fname.ends_with(".tres") or fname.ends_with(".res"):
+			print("[DataDB] found file: ", full_path)
 			_load_resource(full_path)
-		entry = dir.get_next()
+		fname = dir.get_next()
 	dir.list_dir_end()
 
 func _load_resource(path: String) -> void:
-	var resource := load(path)
-	if resource is UnitDef:
-		var unit := resource as UnitDef
+	var res: Resource = ResourceLoader.load(path)
+	if res == null:
+		push_warning("[DataDB] failed load: %s" % path)
+		return
+
+	if res is UnitDef:
+		var unit: UnitDef = res as UnitDef
 		units[unit.id] = unit
-	elif resource is BuildingDef:
-		var building := resource as BuildingDef
+		print("[DataDB] loaded UnitDef: ", unit.id)
+	elif res is BuildingDef:
+		var building: BuildingDef = res as BuildingDef
 		buildings[building.id] = building
-	elif resource is TechDef:
-		var technology := resource as TechDef
+		print("[DataDB] loaded BuildingDef: ", building.id)
+	elif res is TechDef:
+		var technology: TechDef = res as TechDef
 		tech[technology.id] = technology
+		print("[DataDB] loaded TechDef: ", technology.id)
