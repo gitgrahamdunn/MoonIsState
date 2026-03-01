@@ -20,7 +20,7 @@ func is_selected(entity_id: int) -> bool:
 func is_entity_selected(entity_id: int) -> bool:
 	return is_selected(entity_id)
 
-func _unhandled_input(event: InputEvent) -> void:
+func handle_unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.pressed:
 		var mb: InputEventMouseButton = event as InputEventMouseButton
 		if mb.button_index == MOUSE_BUTTON_LEFT:
@@ -29,6 +29,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		elif mb.button_index == MOUSE_BUTTON_RIGHT:
 			print("[Input] RIGHT click @ ", mb.position)
 			_handle_right_click()
+
+func _unhandled_input(event: InputEvent) -> void:
+	handle_unhandled_input(event)
 
 func _handle_left_click(screen_pos: Vector2) -> void:
 	var world_pos: Vector2 = _screen_to_world(screen_pos)
