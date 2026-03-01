@@ -9,9 +9,41 @@ func load_all() -> void:
 	buildings.clear()
 	tech.clear()
 	ensure_sample_data_exists()
+	_try_load_known_defs()
 	print("[DataDB] scanning: ", "res://data")
 	_scan_dir("res://data")
 	print("[DataDB] loaded counts units=", units.size(), " buildings=", buildings.size(), " tech=", tech.size())
+
+func _try_load_known_defs() -> void:
+	var paths: Array[String] = [
+		"res://data/units/worker.tres",
+		"res://data/units/soldier.tres",
+		"res://data/buildings/command_dome.tres",
+		"res://data/buildings/solar_array.tres",
+		"res://data/tech/improved_panels.tres",
+	]
+	for p: String in paths:
+		var exists: bool = ResourceLoader.exists(p)
+		print("[DataDB] exists? ", p, " -> ", exists)
+		if exists:
+			var res: Resource = ResourceLoader.load(p)
+			print("[DataDB] load ", p, " -> ", res)
+			if res == null:
+				continue
+			if res is UnitDef:
+				var u: UnitDef = res as UnitDef
+				units[u.id] = u
+				print("[DataDB] direct loaded UnitDef ", u.id)
+			elif res is BuildingDef:
+				var b: BuildingDef = res as BuildingDef
+				buildings[b.id] = b
+				print("[DataDB] direct loaded BuildingDef ", b.id)
+			elif res is TechDef:
+				var t: TechDef = res as TechDef
+				tech[t.id] = t
+				print("[DataDB] direct loaded TechDef ", t.id)
+			else:
+				print("[DataDB] direct load unexpected type for ", p)
 
 func ensure_sample_data_exists() -> void:
 	var units_dir_err: Error = DirAccess.make_dir_recursive_absolute("res://data/units")

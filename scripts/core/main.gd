@@ -1,6 +1,6 @@
 extends Node2D
 
-const BUILD_STAMP: String = "dev-0006"
+const BUILD_STAMP: String = "dev-0007"
 
 @onready var title_label: Label = $UILayer/HUD/TitleLabel
 @onready var tick_label: Label = $UILayer/HUD/TickLabel
@@ -19,6 +19,7 @@ func _ready() -> void:
 func log_startup_smoke_check() -> void:
 	print("=== Moon RTS Smoke Check ===")
 	print("Godot version: ", Engine.get_version_info())
+	print("Project path: ", ProjectSettings.globalize_path("res://"))
 	var scene_path: String = "<no current scene>"
 	if get_tree().current_scene != null:
 		scene_path = String(get_tree().current_scene.scene_file_path)
