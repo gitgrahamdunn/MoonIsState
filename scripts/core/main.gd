@@ -1,6 +1,6 @@
 extends Node2D
 
-const BUILD_STAMP: String = "dev-0003"
+const BUILD_STAMP: String = "dev-0004"
 
 @onready var title_label: Label = $UILayer/HUD/TitleLabel
 @onready var tick_label: Label = $UILayer/HUD/TickLabel
@@ -22,11 +22,15 @@ func log_startup_smoke_check() -> void:
 	var scene_path: String = "<no current scene>"
 	if get_tree().current_scene != null:
 		scene_path = String(get_tree().current_scene.scene_file_path)
+	var has_game: bool = get_node_or_null("/root/Game") != null
+	var has_sim: bool = get_node_or_null("/root/Sim") != null
+	var has_command_bus: bool = get_node_or_null("/root/CommandBus") != null
+	var has_data_db: bool = get_node_or_null("/root/DataDB") != null
 	print("Main scene: ", scene_path)
-	print("Has Game autoload: ", str(Engine.has_singleton("Game")))
-	print("Has Sim autoload: ", str(Engine.has_singleton("Sim")))
-	print("Has CommandBus autoload: ", str(Engine.has_singleton("CommandBus")))
-	print("Has DataDB autoload: ", str(Engine.has_singleton("DataDB")))
+	print("Has Game autoload: ", str(has_game))
+	print("Has Sim autoload: ", str(has_sim))
+	print("Has CommandBus autoload: ", str(has_command_bus))
+	print("Has DataDB autoload: ", str(has_data_db))
 	print("DataDB unit defs loaded: ", DataDB.units.size())
 	print("DataDB building defs loaded: ", DataDB.buildings.size())
 	print("DataDB tech defs loaded: ", DataDB.tech.size())
