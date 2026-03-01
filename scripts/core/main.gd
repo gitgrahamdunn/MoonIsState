@@ -1,6 +1,6 @@
 extends Node2D
 
-const BUILD_STAMP: String = "dev-0005"
+const BUILD_STAMP: String = "dev-0006"
 
 @onready var title_label: Label = $UILayer/HUD/TitleLabel
 @onready var tick_label: Label = $UILayer/HUD/TickLabel

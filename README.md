@@ -25,6 +25,7 @@ The main scene is `res://scenes/game/Main.tscn`.
 - **Commands only** for gameplay actions: UI/agents enqueue commands through `CommandBus`; simulation drains and applies them.
 - **No Node references in simulation state**: `Sim` stores integer entity IDs and dictionaries only.
 - **Data-driven stats** are loaded from `.tres` resources under `res://data/` via `DataDB`.
+- On first run in dev, the project may auto-generate minimal sample defs under `res://data/` if missing. Commit them to keep CI stable.
 - **Autoload singletons are limited to:**
   - `Game` → `res://scripts/core/game.gd`
   - `Sim` → `res://scripts/core/sim.gd`
