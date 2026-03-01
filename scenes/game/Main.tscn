@@ -59,5 +59,4 @@ script = ExtResource("4_5vx8x")
 
 [node name="SelectionManager" type="Node" parent="."]
 script = ExtResource("3_nl0u2")
-overlay_path = NodePath("../UILayer/SelectionOverlay")
 world_path = NodePath("../World")
