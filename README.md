@@ -47,7 +47,7 @@ This gives a working loop for iterative feature development.
 - **Left click**: Select one unit.
 - **Right click**: Issue a move command for selected unit(s).
 - **Build Launchpad flow**:
-  1. Select a worker.
+  1. Select a clanker.
   2. Click **Build Launchpad** in the Launch Console.
   3. Left-click in the world to place it.
   4. Wait for construction to complete.

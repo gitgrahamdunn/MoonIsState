@@ -3,6 +3,7 @@ extends PanelContainer
 @onready var money_label: Label = $VBox/MoneyLabel
 @onready var revenue_label: Label = $VBox/RevenueLabel
 @onready var metal_label: Label = $VBox/MetalLabel
+@onready var clankers_label: Label = $VBox/ClankersLabel
 @onready var build_button: Button = $VBox/BuildLaunchpadButton
 @onready var launch_robot_button: Button = $VBox/LaunchRobotButton
 @onready var launch_earth_button: Button = $VBox/LaunchEarthButton
@@ -32,11 +33,11 @@ func try_handle_left_click(world_pos: Vector2, selected_ids: Array[int]) -> bool
 		return false
 	if _builder_id <= 0:
 		if selected_ids.size() <= 0:
-			print("[BuildUI] No builder selected")
+			print("[BuildUI] No clanker selected")
 			_build_mode = false
 			_update_ui()
 			return false
-		_builder_id = selected_ids[0]
+		_builder_id = int(selected_ids[0])
 	CommandBus.enqueue({
 		"type": "build",
 		"builder_id": _builder_id,
@@ -54,9 +55,9 @@ func _on_build_launchpad_pressed() -> void:
 		return
 	var selected_ids: Array[int] = manager.get("selected_entity_ids") as Array[int]
 	if selected_ids.size() <= 0:
-		print("[BuildUI] Select a worker first")
+		print("[BuildUI] Select a clanker first")
 		return
-	_builder_id = selected_ids[0]
+	_builder_id = int(selected_ids[0])
 	_build_mode = true
 	_update_ui()
 
@@ -78,6 +79,23 @@ func _update_ui() -> void:
 	money_label.text = "Money: %.2f B$" % money
 	revenue_label.text = "Revenue: +%.3f B$/min" % revenue_min
 	metal_label.text = "Metal: %.1f" % metal
+
+	var total_clankers: int = 0
+	var broken_clankers: int = 0
+	var available_clankers: int = 0
+	for idv: Variant in Sim.entities.keys():
+		var entity_id: int = int(idv)
+		var e: Dictionary = Sim.entities[entity_id] as Dictionary
+		var kind: StringName = e.get("kind", &"") as StringName
+		if kind != &"unit":
+			continue
+		total_clankers += 1
+		var is_broken: bool = bool(e.get("is_broken", false))
+		if is_broken:
+			broken_clankers += 1
+		if Sim.is_clanker_available(entity_id):
+			available_clankers += 1
+	clankers_label.text = "Clankers: %d (broken: %d) | Build capacity: %d concurrent" % [total_clankers, broken_clankers, available_clankers]
 
 	build_button.text = "Build Launchpad"
 	if _build_mode:

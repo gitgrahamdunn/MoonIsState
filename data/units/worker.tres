@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1_u1")
 id = &"worker"
-display_name = "Worker"
+display_name = "Clanker"
 costs = {
 &"metal": 25
 }

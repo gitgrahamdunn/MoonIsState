@@ -37,14 +37,29 @@ func _draw() -> void:
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 	draw_ellipse(Vector2(0.0, 11.0), SHADOW_SIZE, Color(0.0, 0.0, 0.0, 0.28))
 
+	var entity: Dictionary = Sim.get_entity(entity_id)
+	var is_broken: bool = bool(entity.get("is_broken", false))
+	var durability: float = float(entity.get("durability", 100.0))
+	var durability_ratio: float = clamp(durability / 100.0, 0.0, 1.0)
+
 	var body_color: Color = Color(0.77, 0.86, 0.96, 1.0)
 	var outline_color: Color = Color(0.14, 0.2, 0.28, 1.0)
+	if is_broken:
+		body_color = Color(0.3, 0.3, 0.34, 1.0)
+		outline_color = Color(0.5, 0.12, 0.12, 1.0)
 	draw_circle(Vector2.ZERO, BODY_RADIUS, body_color)
 	draw_arc(Vector2.ZERO, BODY_RADIUS, 0.0, TAU, 48, outline_color, 2.0)
 
 	var visor_center: Vector2 = Vector2(0.0, -2.0)
 	draw_circle(visor_center, 5.0, Color(0.3, 0.42, 0.56, 1.0))
 	draw_arc(visor_center, 5.0, 0.0, TAU, 24, Color(0.64, 0.81, 0.95, 0.9), 1.6)
+
+	var durability_start: float = -PI * 0.5
+	var durability_end: float = durability_start + (TAU * durability_ratio)
+	draw_arc(Vector2.ZERO, BODY_RADIUS + 4.0, durability_start, durability_end, 24, Color(0.32, 0.95, 0.46, 0.9), 1.5)
+	if is_broken:
+		draw_line(Vector2(-7.0, -7.0), Vector2(7.0, 7.0), Color(1.0, 0.2, 0.2, 1.0), 2.0)
+		draw_line(Vector2(-7.0, 7.0), Vector2(7.0, -7.0), Color(1.0, 0.2, 0.2, 1.0), 2.0)
 
 	if _selected:
 		var pulse: float = sin(_t * 4.0) * 2.0
