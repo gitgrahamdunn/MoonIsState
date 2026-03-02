@@ -101,6 +101,10 @@ text = "Launch Robot Drop (1.0 B$)"
 layout_mode = 2
 text = "Launch Earth Mission (2.0 B$)"
 
+[node name="ScrapBrokenButton" type="Button" parent="UILayer/HUD/LaunchConsole/VBox"]
+layout_mode = 2
+text = "Send to Scrap Heap"
+
 [node name="SelectionOverlay" type="Control" parent="UILayer"]
 layout_mode = 3
 anchors_preset = 15
