@@ -17,6 +17,8 @@ func _draw() -> void:
 		_draw_solar_array()
 	elif def_id == &"launchpad":
 		_draw_launchpad()
+	elif def_id == &"scrap_heap":
+		_draw_scrap_heap()
 	else:
 		_draw_command_dome()
 
@@ -44,6 +46,15 @@ func _draw_solar_array() -> void:
 	_draw_panel(Vector2(-20.0, -18.0), Vector2(22.0, 12.0))
 	_draw_panel(Vector2(2.0, -20.0), Vector2(22.0, 12.0))
 	_draw_panel(Vector2(24.0, -18.0), Vector2(18.0, 10.0))
+
+
+func _draw_scrap_heap() -> void:
+	var pile_rect: Rect2 = Rect2(Vector2(-28.0, -14.0), Vector2(56.0, 28.0))
+	draw_rect(pile_rect, Color(0.36, 0.32, 0.3, 1.0), true)
+	draw_rect(pile_rect, Color(0.1, 0.1, 0.1, 1.0), false, 2.0)
+	draw_circle(Vector2(-12.0, -2.0), 6.0, Color(0.62, 0.62, 0.66, 1.0))
+	draw_circle(Vector2(2.0, 1.0), 7.0, Color(0.56, 0.58, 0.62, 1.0))
+	draw_circle(Vector2(14.0, -3.0), 5.0, Color(0.5, 0.52, 0.56, 1.0))
 
 func _draw_launchpad() -> void:
 	var platform_rect: Rect2 = Rect2(Vector2(-34.0, -16.0), Vector2(68.0, 32.0))

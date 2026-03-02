@@ -1,6 +1,6 @@
 extends Node2D
 
-const BUILD_STAMP: String = "dev-0014"
+const BUILD_STAMP: String = "dev-0017"
 
 @onready var title_label: Label = $UILayer/HUD/TitleLabel
 @onready var tick_label: Label = $UILayer/HUD/TickLabel
@@ -53,11 +53,12 @@ func _on_tick_advanced(new_tick_count: int) -> void:
 	tick_label.text = "Tick: %d (%.1fs)" % [new_tick_count, seconds]
 
 func _on_resources_changed(new_resources: Dictionary) -> void:
-	resources_label.text = "Regolith: %.1f\nMetal: %.1f\nPower: %.1f\nOxygen: %.1f" % [
+	resources_label.text = "Regolith: %.1f\nMetal: %.1f\nPower: %.1f\nOxygen: %.1f\nScrap: %.1f" % [
 		float(new_resources.get(&"regolith", 0.0)),
 		float(new_resources.get(&"metal", 0.0)),
 		float(new_resources.get(&"power", 0.0)),
 		float(new_resources.get(&"oxygen", 0.0)),
+		float(new_resources.get(&"scrap", 0.0)),
 	]
 
 func _unhandled_input(event: InputEvent) -> void:
