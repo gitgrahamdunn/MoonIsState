@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="BuildingDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/core/building_def.gd" id="1_lp"]
+
+[resource]
+script = ExtResource("1_lp")
+id = &"launchpad"
+display_name = "Launchpad"
+cost_money = 0.0
+cost_metal = 30.0
+build_time_sec = 20.0
+hp = 900
+power_output = 0

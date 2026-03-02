@@ -21,6 +21,7 @@ func _try_load_known_defs() -> void:
 		"res://data/units/soldier.tres",
 		"res://data/buildings/command_dome.tres",
 		"res://data/buildings/solar_array.tres",
+		"res://data/buildings/launchpad.tres",
 		"res://data/tech/improved_panels.tres",
 	]
 	for p: String in paths:

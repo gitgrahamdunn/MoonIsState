@@ -1,9 +1,10 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=5 format=3 uid="uid://dwx53ibq7j4kj"]
 
 [ext_resource type="Script" path="res://scripts/core/main.gd" id="1_3aw8l"]
 [ext_resource type="Script" path="res://scripts/core/world_spawner.gd" id="2_wv6qq"]
 [ext_resource type="Script" path="res://scripts/ui/selection_manager.gd" id="3_nl0u2"]
 [ext_resource type="Script" path="res://scripts/ui/selection_overlay.gd" id="4_5vx8x"]
+[ext_resource type="Script" path="res://scripts/ui/launch_console.gd" id="5_lc1"]
 
 [node name="Main" type="Node2D"]
 script = ExtResource("1_3aw8l")
@@ -23,7 +24,6 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-
 
 [node name="HUDPanel" type="ColorRect" parent="UILayer/HUD"]
 layout_mode = 0
@@ -60,6 +60,42 @@ offset_right = 280.0
 offset_bottom = 160.0
 text = "Resources"
 mouse_filter = 2
+
+[node name="LaunchConsole" type="PanelContainer" parent="UILayer/HUD"]
+layout_mode = 0
+offset_left = 894.0
+offset_top = 18.0
+offset_right = 1265.0
+offset_bottom = 260.0
+mouse_filter = 1
+script = ExtResource("5_lc1")
+
+[node name="VBox" type="VBoxContainer" parent="UILayer/HUD/LaunchConsole"]
+layout_mode = 2
+
+[node name="MoneyLabel" type="Label" parent="UILayer/HUD/LaunchConsole/VBox"]
+layout_mode = 2
+text = "Money: 0.00 B$"
+
+[node name="RevenueLabel" type="Label" parent="UILayer/HUD/LaunchConsole/VBox"]
+layout_mode = 2
+text = "Revenue: +0.000 B$/min"
+
+[node name="MetalLabel" type="Label" parent="UILayer/HUD/LaunchConsole/VBox"]
+layout_mode = 2
+text = "Metal: 0"
+
+[node name="BuildLaunchpadButton" type="Button" parent="UILayer/HUD/LaunchConsole/VBox"]
+layout_mode = 2
+text = "Build Launchpad"
+
+[node name="LaunchRobotButton" type="Button" parent="UILayer/HUD/LaunchConsole/VBox"]
+layout_mode = 2
+text = "Launch Robot Drop (1.0 B$)"
+
+[node name="LaunchEarthButton" type="Button" parent="UILayer/HUD/LaunchConsole/VBox"]
+layout_mode = 2
+text = "Launch Earth Mission (2.0 B$)"
 
 [node name="SelectionOverlay" type="Control" parent="UILayer"]
 layout_mode = 3
