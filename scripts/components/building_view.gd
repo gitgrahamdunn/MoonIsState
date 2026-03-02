@@ -1,15 +1,52 @@
 extends Node2D
 
-const BUILDING_SIZE := Vector2i(44, 44)
+const BASE_SIZE: Vector2 = Vector2(50.0, 38.0)
 
 @export var entity_id: int = -1
 
-@onready var sprite: Sprite2D = $Sprite2D
-
 func _ready() -> void:
-	_ensure_placeholder_texture()
 	Sim.entity_updated.connect(_on_entity_updated)
 	_update_from_sim()
+
+func _draw() -> void:
+	var e: Dictionary = Sim.get_entity(entity_id)
+	var def_id: StringName = e.get("def_id", &"") as StringName
+
+	draw_ellipse(Vector2(0.0, 20.0), Vector2(32.0, 12.0), Color(0.0, 0.0, 0.0, 0.25))
+	if def_id == &"solar_array":
+		_draw_solar_array()
+	else:
+		_draw_command_dome()
+
+func _draw_command_dome() -> void:
+	var body_rect: Rect2 = Rect2(Vector2(-BASE_SIZE.x * 0.5, -BASE_SIZE.y * 0.5), BASE_SIZE)
+	draw_rect(body_rect, Color(0.44, 0.52, 0.64, 1.0), true)
+	draw_rect(body_rect, Color(0.13, 0.17, 0.23, 1.0), false, 2.0)
+
+	var corner_radius: float = 7.0
+	draw_circle(body_rect.position + Vector2(corner_radius, corner_radius), corner_radius, Color(0.44, 0.52, 0.64, 1.0))
+	draw_circle(body_rect.position + Vector2(body_rect.size.x - corner_radius, corner_radius), corner_radius, Color(0.44, 0.52, 0.64, 1.0))
+	draw_circle(body_rect.position + Vector2(corner_radius, body_rect.size.y - corner_radius), corner_radius, Color(0.44, 0.52, 0.64, 1.0))
+	draw_circle(body_rect.position + Vector2(body_rect.size.x - corner_radius, body_rect.size.y - corner_radius), corner_radius, Color(0.44, 0.52, 0.64, 1.0))
+
+	draw_circle(Vector2(0.0, -22.0), 14.0, Color(0.58, 0.77, 0.92, 0.95))
+	draw_arc(Vector2(0.0, -22.0), 14.0, PI, TAU, 32, Color(0.1, 0.16, 0.24, 1.0), 2.0)
+
+func _draw_solar_array() -> void:
+	var base_rect: Rect2 = Rect2(Vector2(-15.0, -10.0), Vector2(30.0, 20.0))
+	draw_rect(base_rect, Color(0.46, 0.5, 0.56, 1.0), true)
+	draw_rect(base_rect, Color(0.12, 0.14, 0.2, 1.0), false, 2.0)
+
+	_draw_panel(Vector2(-20.0, -18.0), Vector2(22.0, 12.0))
+	_draw_panel(Vector2(2.0, -20.0), Vector2(22.0, 12.0))
+	_draw_panel(Vector2(24.0, -18.0), Vector2(18.0, 10.0))
+
+func _draw_panel(position: Vector2, size: Vector2) -> void:
+	var panel_rect: Rect2 = Rect2(position, size)
+	draw_rect(panel_rect, Color(0.22, 0.43, 0.72, 0.98), true)
+	draw_rect(panel_rect, Color(0.62, 0.84, 1.0, 0.9), false, 1.5)
+	var grid_y: float = panel_rect.position.y + panel_rect.size.y * 0.5
+	draw_line(Vector2(panel_rect.position.x, grid_y), Vector2(panel_rect.end.x, grid_y), Color(0.7, 0.9, 1.0, 0.55), 1.0)
 
 func _on_entity_updated(updated_entity_id: int) -> void:
 	if updated_entity_id != entity_id:
@@ -19,16 +56,8 @@ func _on_entity_updated(updated_entity_id: int) -> void:
 func _update_from_sim() -> void:
 	if entity_id < 0:
 		return
-	var entity := Sim.get_entity(entity_id)
+	var entity: Dictionary = Sim.get_entity(entity_id)
 	if entity.is_empty():
 		return
-	global_position = entity.get("pos", global_position)
-
-func _ensure_placeholder_texture() -> void:
-	if sprite.texture != null:
-		return
-	var image := Image.create(BUILDING_SIZE.x, BUILDING_SIZE.y, false, Image.FORMAT_RGBA8)
-	image.fill(Color(0.4, 0.7, 1.0, 1.0))
-	var texture := ImageTexture.create_from_image(image)
-	sprite.texture = texture
-	sprite.centered = true
+	global_position = entity.get("pos", global_position) as Vector2
+	queue_redraw()
