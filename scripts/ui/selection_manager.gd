@@ -1,6 +1,7 @@
 extends Node
 
 const CLICK_RADIUS: float = 40.0
+const DEBUG_INPUT: bool = true
 
 var selected_entity_ids: Array[int] = []
 
@@ -24,10 +25,12 @@ func handle_unhandled_input(event: InputEvent) -> void:
 			return
 		var world_pos: Vector2 = main.call("get_world_mouse_pos") as Vector2
 		if mb.button_index == MOUSE_BUTTON_LEFT:
-			print("[Input] LEFT click @ ", mb.position)
+			if DEBUG_INPUT:
+				print("[Input] LEFT click @ ", mb.position)
 			_try_select_at(world_pos)
 		elif mb.button_index == MOUSE_BUTTON_RIGHT:
-			print("[Input] RIGHT click @ ", mb.position)
+			if DEBUG_INPUT:
+				print("[Input] RIGHT click @ ", mb.position)
 			if selected_entity_ids.size() > 0:
 				var target: Vector2 = world_pos
 				CommandBus.enqueue({
@@ -35,7 +38,8 @@ func handle_unhandled_input(event: InputEvent) -> void:
 					"entity_ids": selected_entity_ids.duplicate(),
 					"target_pos": target,
 				})
-				print("[Cmd] move enqueue ids=", selected_entity_ids, " target=", target)
+				if DEBUG_INPUT:
+					print("[Cmd] move enqueue ids=", selected_entity_ids, " target=", target)
 
 func _unhandled_input(event: InputEvent) -> void:
 	handle_unhandled_input(event)
@@ -43,12 +47,14 @@ func _unhandled_input(event: InputEvent) -> void:
 func _select_single(entity_id: int) -> void:
 	selected_entity_ids = [entity_id]
 	_apply_selection_to_views()
-	print("[Select] selected: ", selected_entity_ids)
+	if DEBUG_INPUT:
+		print("[Select] selected: ", selected_entity_ids)
 
 func _clear_selection() -> void:
 	selected_entity_ids.clear()
 	_apply_selection_to_views()
-	print("[Select] cleared")
+	if DEBUG_INPUT:
+		print("[Select] cleared")
 
 func _apply_selection_to_views() -> void:
 	var views: Array = get_tree().get_nodes_in_group("unit_views")

@@ -1,5 +1,7 @@
 extends Node
 
+const DEBUG_INPUT: bool = true
+
 var queue: Array[Dictionary] = []
 
 func enqueue(command: Dictionary) -> void:
@@ -10,11 +12,13 @@ func enqueue(command: Dictionary) -> void:
 	if typeof(command_type) != TYPE_STRING and typeof(command_type) != TYPE_STRING_NAME:
 		push_warning("Rejected command with invalid 'type'.")
 		return
-	print("[CmdBus] enqueue ", command.get("type"))
+	if DEBUG_INPUT:
+		print("[CmdBus] enqueue ", command.get("type"))
 	queue.append(command.duplicate(true))
 
 func drain() -> Array[Dictionary]:
 	var drained: Array[Dictionary] = queue
 	queue = []
-	print("[CmdBus] drain count=", drained.size())
+	if DEBUG_INPUT:
+		print("[CmdBus] drain count=", drained.size())
 	return drained

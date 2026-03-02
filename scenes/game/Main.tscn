@@ -1,14 +1,18 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=6 format=3]
 
 [ext_resource type="Script" path="res://scripts/core/main.gd" id="1_3aw8l"]
 [ext_resource type="Script" path="res://scripts/core/world_spawner.gd" id="2_wv6qq"]
 [ext_resource type="Script" path="res://scripts/ui/selection_manager.gd" id="3_nl0u2"]
 [ext_resource type="Script" path="res://scripts/ui/selection_overlay.gd" id="4_5vx8x"]
+[ext_resource type="Script" path="res://scripts/components/moon_background.gd" id="5_l40u6"]
 
 [node name="Main" type="Node2D"]
 script = ExtResource("1_3aw8l")
 
 [node name="World" type="Node2D" parent="."]
+
+[node name="Background" type="Node2D" parent="World"]
+script = ExtResource("5_l40u6")
 
 [node name="WorldSpawner" type="Node2D" parent="World"]
 script = ExtResource("2_wv6qq")
@@ -22,6 +26,15 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
+
+[node name="PanelBG" type="ColorRect" parent="UILayer/HUD"]
+layout_mode = 0
+offset_left = 8.0
+offset_top = 6.0
+offset_right = 300.0
+offset_bottom = 136.0
+color = Color(0.04, 0.05, 0.08, 0.62)
 mouse_filter = 2
 
 [node name="TitleLabel" type="Label" parent="UILayer/HUD"]
