@@ -9,6 +9,9 @@ signal tick_advanced(tick_count: int)
 const TICKS_PER_SECOND: int = 20
 const DT: float = 1.0 / float(TICKS_PER_SECOND)
 const MOVE_EPSILON: float = 4.0
+const CLANKER_DURABILITY_MAX: float = 100.0
+const CLANKER_DECAY_IDLE_PER_SEC: float = 0.02
+const CLANKER_DECAY_WORK_PER_SEC: float = 0.10
 
 var next_entity_id: int = 1
 var entities: Dictionary = {}
@@ -63,6 +66,7 @@ func step() -> void:
 
 	_update_constructing_buildings()
 	_update_units_movement()
+	_update_clanker_degradation()
 
 	if _resources_dirty:
 		emit_signal("resources_changed", resources.duplicate(true))
@@ -118,8 +122,12 @@ func _handle_build_command(cmd: Dictionary) -> void:
 	e["is_constructing"] = build_time_total > 0.0
 	e["build_remaining"] = build_time_total
 	e["build_total"] = build_time_total
+	e["assigned_clanker_id"] = -1
 	entities[entity_id] = e
 	emit_signal("entity_updated", entity_id)
+	var clanker_id: int = _assign_clanker_to_build(entity_id)
+	if clanker_id < 0:
+		print("[Build] queued: no available clanker to start; waiting")
 	print("[Build] accepted def=", String(building_def_id), " id=", entity_id, " money=", get_resource(&"money"), " metal=", get_resource(&"metal"))
 
 func _handle_launch_robot_command() -> void:
@@ -136,7 +144,7 @@ func _handle_launch_robot_command() -> void:
 	spawn_entity(&"worker", spawn_pos + Vector2(20.0, 0.0), 1, &"unit")
 	spawn_entity(&"worker", spawn_pos + Vector2(36.0, 12.0), 1, &"unit")
 	spawn_entity(&"worker", spawn_pos + Vector2(36.0, -12.0), 1, &"unit")
-	print("[Launch] robot drop success: money=", get_resource(&"money"), " workers+3")
+	print("[Launch] robot drop success: money=", get_resource(&"money"), " clankers+3")
 
 func _handle_launch_earth_mission_command() -> void:
 	if not has_completed_launchpad():
@@ -154,6 +162,8 @@ func _handle_launch_earth_mission_command() -> void:
 func _update_constructing_buildings() -> void:
 	for idv: Variant in entities.keys():
 		var id: int = int(idv)
+		if not entities.has(id):
+			continue
 		var e: Dictionary = entities[id] as Dictionary
 		var kind: StringName = e.get("kind", &"") as StringName
 		if kind != &"building":
@@ -161,14 +171,82 @@ func _update_constructing_buildings() -> void:
 		var is_constructing: bool = bool(e.get("is_constructing", false))
 		if not is_constructing:
 			continue
+		var assigned_clanker_id: int = int(e.get("assigned_clanker_id", -1))
+		if assigned_clanker_id <= 0 or not entities.has(assigned_clanker_id):
+			assigned_clanker_id = _assign_clanker_to_build(id)
+			if entities.has(id):
+				e = entities[id] as Dictionary
+		if assigned_clanker_id <= 0:
+			continue
+		if not entities.has(assigned_clanker_id):
+			e["assigned_clanker_id"] = -1
+			entities[id] = e
+			emit_signal("entity_updated", id)
+			continue
+		var clanker: Dictionary = entities[assigned_clanker_id] as Dictionary
+		var clanker_broken: bool = bool(clanker.get("is_broken", false))
+		if clanker_broken:
+			e["assigned_clanker_id"] = -1
+			entities[id] = e
+			emit_signal("entity_updated", id)
+			continue
+
 		var remaining: float = float(e.get("build_remaining", 0.0))
 		remaining -= DT
 		e["build_remaining"] = max(remaining, 0.0)
 		if remaining <= 0.0:
 			e["is_constructing"] = false
-			print("[Build] completed entity=", id)
+			var freed_clanker_id: int = int(e.get("assigned_clanker_id", -1))
+			e["assigned_clanker_id"] = -1
+			if freed_clanker_id > 0 and entities.has(freed_clanker_id):
+				var freed_clanker: Dictionary = entities[freed_clanker_id] as Dictionary
+				freed_clanker["is_working"] = false
+				freed_clanker["assigned_build_id"] = -1
+				entities[freed_clanker_id] = freed_clanker
+				emit_signal("entity_updated", freed_clanker_id)
+			print("[Build] completed entity=", id, " freed clanker=", freed_clanker_id)
 		entities[id] = e
 		emit_signal("entity_updated", id)
+
+func _update_clanker_degradation() -> void:
+	for idv: Variant in entities.keys():
+		var id: int = int(idv)
+		if not entities.has(id):
+			continue
+		var e: Dictionary = entities[id] as Dictionary
+		var kind: StringName = e.get("kind", &"") as StringName
+		if kind != &"unit":
+			continue
+		var is_broken: bool = bool(e.get("is_broken", false))
+		if is_broken:
+			continue
+		var durability_before: float = float(e.get("durability", CLANKER_DURABILITY_MAX))
+		var is_working: bool = bool(e.get("is_working", false))
+		var decay_per_sec: float = CLANKER_DECAY_IDLE_PER_SEC
+		if is_working:
+			decay_per_sec = CLANKER_DECAY_WORK_PER_SEC
+		var durability_after: float = clamp(durability_before - (decay_per_sec * DT), 0.0, CLANKER_DURABILITY_MAX)
+		e["durability"] = durability_after
+
+		var threshold_before: int = int(floor(durability_before))
+		var threshold_after: int = int(floor(durability_after))
+		var should_emit_update: bool = threshold_before != threshold_after
+		if durability_after <= 0.0:
+			e["is_broken"] = true
+			e["is_working"] = false
+			var assigned_build_id: int = int(e.get("assigned_build_id", -1))
+			e["assigned_build_id"] = -1
+			if assigned_build_id > 0 and entities.has(assigned_build_id):
+				var building: Dictionary = entities[assigned_build_id] as Dictionary
+				building["assigned_clanker_id"] = -1
+				entities[assigned_build_id] = building
+				emit_signal("entity_updated", assigned_build_id)
+			print("[Clanker] broke: id=", id)
+			should_emit_update = true
+
+		entities[id] = e
+		if should_emit_update:
+			emit_signal("entity_updated", id)
 
 func _update_units_movement() -> void:
 	for idv: Variant in entities.keys():
@@ -219,9 +297,84 @@ func spawn_entity(def_id: StringName, pos: Vector2, owner_id: int, kind: StringN
 		"is_constructing": false,
 		"build_remaining": 0.0,
 		"build_total": 0.0,
+		"assigned_clanker_id": -1,
 	}
+	if resolved_kind == &"unit":
+		var entity: Dictionary = entities[entity_id] as Dictionary
+		entity["durability"] = CLANKER_DURABILITY_MAX
+		entity["is_broken"] = false
+		entity["is_working"] = false
+		entity["assigned_build_id"] = -1
+		entities[entity_id] = entity
 	emit_signal("entity_spawned", entity_id)
 	return entity_id
+
+func is_clanker_available(entity_id: int) -> bool:
+	if not entities.has(entity_id):
+		return false
+	var e: Dictionary = entities[entity_id] as Dictionary
+	var kind: StringName = e.get("kind", &"") as StringName
+	if kind != &"unit":
+		return false
+	var is_broken: bool = bool(e.get("is_broken", false))
+	if is_broken:
+		return false
+	var is_working: bool = bool(e.get("is_working", false))
+	return not is_working
+
+func get_available_clankers() -> Array[int]:
+	var available: Array[int] = []
+	for idv: Variant in entities.keys():
+		var id: int = int(idv)
+		if is_clanker_available(id):
+			available.append(id)
+	return available
+
+func get_active_build_sites() -> Array[int]:
+	var active: Array[int] = []
+	for idv: Variant in entities.keys():
+		var id: int = int(idv)
+		var e: Dictionary = entities[id] as Dictionary
+		var kind: StringName = e.get("kind", &"") as StringName
+		if kind != &"building":
+			continue
+		var is_constructing: bool = bool(e.get("is_constructing", false))
+		if is_constructing:
+			active.append(id)
+	return active
+
+func _assign_clanker_to_build(building_entity_id: int) -> int:
+	if not entities.has(building_entity_id):
+		return -1
+	var building: Dictionary = entities[building_entity_id] as Dictionary
+	var kind: StringName = building.get("kind", &"") as StringName
+	if kind != &"building":
+		return -1
+	var is_constructing: bool = bool(building.get("is_constructing", false))
+	if not is_constructing:
+		return -1
+	var existing_clanker_id: int = int(building.get("assigned_clanker_id", -1))
+	if existing_clanker_id > 0 and entities.has(existing_clanker_id):
+		var existing_clanker: Dictionary = entities[existing_clanker_id] as Dictionary
+		var existing_clanker_broken: bool = bool(existing_clanker.get("is_broken", false))
+		if not existing_clanker_broken:
+			return existing_clanker_id
+
+	var available_clankers: Array[int] = get_available_clankers()
+	if available_clankers.is_empty():
+		return -1
+	var clanker_id: int = int(available_clankers[0])
+	var clanker: Dictionary = entities[clanker_id] as Dictionary
+	clanker["is_working"] = true
+	clanker["assigned_build_id"] = building_entity_id
+	entities[clanker_id] = clanker
+
+	building["assigned_clanker_id"] = clanker_id
+	entities[building_entity_id] = building
+
+	emit_signal("entity_updated", clanker_id)
+	emit_signal("entity_updated", building_entity_id)
+	return clanker_id
 
 func despawn_entity(entity_id: int) -> void:
 	if not entities.has(entity_id):
