@@ -18,6 +18,7 @@ var money_rate_per_sec: float = 0.0
 
 var _accumulator: float = 0.0
 var _launchpad_warning_printed: bool = false
+var _resources_dirty: bool = false
 
 func _process(delta: float) -> void:
 	_accumulator += delta
@@ -39,12 +40,13 @@ func reset() -> void:
 	tick_count = 0
 	_accumulator = 0.0
 	_launchpad_warning_printed = false
+	_resources_dirty = true
 	emit_signal("resources_changed", resources.duplicate(true))
+	_resources_dirty = false
 
 func step() -> void:
 	tick_count += 1
-	resources[&"money"] = get_resource(&"money") + (money_rate_per_sec * DT)
-	emit_signal("resources_changed", resources.duplicate(true))
+	set_resource(&"money", get_resource(&"money") + (money_rate_per_sec * DT))
 	emit_signal("tick_advanced", tick_count)
 
 	var cmds: Array[Dictionary] = CommandBus.drain()
@@ -61,6 +63,10 @@ func step() -> void:
 
 	_update_constructing_buildings()
 	_update_units_movement()
+
+	if _resources_dirty:
+		emit_signal("resources_changed", resources.duplicate(true))
+		_resources_dirty = false
 
 func _handle_move_command(cmd: Dictionary) -> void:
 	var ids: Array = cmd.get("entity_ids", []) as Array
@@ -230,7 +236,7 @@ func get_entity(entity_id: int) -> Dictionary:
 
 func set_resource(name: StringName, value: float) -> void:
 	resources[name] = value
-	emit_signal("resources_changed", resources.duplicate(true))
+	_resources_dirty = true
 
 func add_resource(name: StringName, delta: float) -> void:
 	set_resource(name, get_resource(name) + delta)
