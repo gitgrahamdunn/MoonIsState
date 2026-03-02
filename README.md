@@ -1,6 +1,6 @@
-# Moon RTS (Godot 4.x)
+# MoonIsState (Godot 4.x)
 
-Base project skeleton for a top-down 2D RTS prototype on the moon.
+Moon base / infrastructure tycoon prototype built in Godot 4.x with an authoritative fixed-tick simulation.
 
 ## Architecture Guardrails
 
@@ -36,7 +36,7 @@ The main scene is `res://scenes/game/Main.tscn`.
 
 `Main` triggers a new match, seeds sample entities/resources, and renders:
 
-- Title label (`Moon RTS`)
+- Title label (`MoonIsState`)
 - Live resources from `Sim.resources_changed`
 - Tick counter updated once per simulated second
 
@@ -45,5 +45,10 @@ This gives a working loop for iterative feature development.
 ## Controls
 
 - **Left click**: Select one unit.
-- **Left click + drag**: Box-select multiple units.
-- **Right click**: Issue a move command for selected units.
+- **Right click**: Issue a move command for selected unit(s).
+- **Build Launchpad flow**:
+  1. Select a worker.
+  2. Click **Build Launchpad** in the Launch Console.
+  3. Left-click in the world to place it.
+  4. Wait for construction to complete.
+  5. Use Launch Console buttons once the launchpad is complete.

@@ -1,6 +1,6 @@
 extends Node2D
 
-const BUILD_STAMP: String = "dev-0012"
+const BUILD_STAMP: String = "dev-0013"
 
 @onready var title_label: Label = $UILayer/HUD/TitleLabel
 @onready var tick_label: Label = $UILayer/HUD/TickLabel
@@ -17,7 +17,7 @@ func _ready() -> void:
 				var child_control: Control = child_node as Control
 				child_control.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
-	title_label.text = "Moon RTS  [" + BUILD_STAMP + "]"
+	title_label.text = "MoonIsState  [" + BUILD_STAMP + "]"
 	Sim.tick_advanced.connect(_on_tick_advanced)
 	Sim.resources_changed.connect(_on_resources_changed)
 

@@ -1,5 +1,7 @@
 extends Node
 
+const DEBUG_DATA_DB: bool = false
+
 var units: Dictionary = {}
 var buildings: Dictionary = {}
 var tech: Dictionary = {}
@@ -8,10 +10,12 @@ func load_all() -> void:
 	units.clear()
 	buildings.clear()
 	tech.clear()
-	print("[DataDB] scanning: ", "res://data")
+	if DEBUG_DATA_DB:
+		print("[DataDB] scanning: ", "res://data")
 	_scan_dir("res://data")
 	if units.is_empty() and buildings.is_empty() and tech.is_empty():
-		print("[DataDB] scan produced 0 defs; trying direct known paths fallback...")
+		if DEBUG_DATA_DB:
+			print("[DataDB] scan produced 0 defs; trying direct known paths fallback...")
 		_try_load_known_defs()
 	print("[DataDB] loaded counts units=", units.size(), " buildings=", buildings.size(), " tech=", tech.size())
 
@@ -26,26 +30,32 @@ func _try_load_known_defs() -> void:
 	]
 	for p: String in paths:
 		var exists: bool = ResourceLoader.exists(p)
-		print("[DataDB] exists? ", p, " -> ", exists)
+		if DEBUG_DATA_DB:
+			print("[DataDB] exists? ", p, " -> ", exists)
 		if exists:
 			var res: Resource = ResourceLoader.load(p)
-			print("[DataDB] load ", p, " -> ", res)
+			if DEBUG_DATA_DB:
+				print("[DataDB] load ", p, " -> ", res)
 			if res == null:
 				continue
 			if res is UnitDef:
 				var u: UnitDef = res as UnitDef
 				units[u.id] = u
-				print("[DataDB] direct loaded UnitDef ", u.id)
+				if DEBUG_DATA_DB:
+					print("[DataDB] direct loaded UnitDef ", u.id)
 			elif res is BuildingDef:
 				var b: BuildingDef = res as BuildingDef
 				buildings[b.id] = b
-				print("[DataDB] direct loaded BuildingDef ", b.id)
+				if DEBUG_DATA_DB:
+					print("[DataDB] direct loaded BuildingDef ", b.id)
 			elif res is TechDef:
 				var t: TechDef = res as TechDef
 				tech[t.id] = t
-				print("[DataDB] direct loaded TechDef ", t.id)
+				if DEBUG_DATA_DB:
+					print("[DataDB] direct loaded TechDef ", t.id)
 			else:
-				print("[DataDB] direct load unexpected type for ", p)
+				if DEBUG_DATA_DB:
+					print("[DataDB] direct load unexpected type for ", p)
 
 func get_unit_def(id: StringName) -> UnitDef:
 	return units.get(id)
@@ -71,7 +81,8 @@ func _scan_dir(path: String) -> void:
 
 		var full_path: String = path.path_join(fname)
 		var is_dir: bool = dir.current_is_dir()
-		print("[DataDB] entry: ", full_path, " dir=", is_dir)
+		if DEBUG_DATA_DB:
+			print("[DataDB] entry: ", full_path, " dir=", is_dir)
 		if is_dir:
 			_scan_dir(full_path)
 		else:
@@ -82,7 +93,8 @@ func _scan_dir(path: String) -> void:
 				fname = dir.get_next()
 				continue
 			if not ResourceLoader.exists(load_path):
-				print("[DataDB] skip missing: ", load_path)
+				if DEBUG_DATA_DB:
+					print("[DataDB] skip missing: ", load_path)
 				fname = dir.get_next()
 				continue
 			_load_resource(load_path)
@@ -98,12 +110,15 @@ func _load_resource(path: String) -> void:
 	if res is UnitDef:
 		var unit: UnitDef = res as UnitDef
 		units[unit.id] = unit
-		print("[DataDB] loaded UnitDef: ", unit.id)
+		if DEBUG_DATA_DB:
+			print("[DataDB] loaded UnitDef: ", unit.id)
 	elif res is BuildingDef:
 		var building: BuildingDef = res as BuildingDef
 		buildings[building.id] = building
-		print("[DataDB] loaded BuildingDef: ", building.id)
+		if DEBUG_DATA_DB:
+			print("[DataDB] loaded BuildingDef: ", building.id)
 	elif res is TechDef:
 		var technology: TechDef = res as TechDef
 		tech[technology.id] = technology
-		print("[DataDB] loaded TechDef: ", technology.id)
+		if DEBUG_DATA_DB:
+			print("[DataDB] loaded TechDef: ", technology.id)
