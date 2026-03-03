@@ -1,13 +1,10 @@
 extends Node2D
 
 const BODY_RADIUS: float = 15.0
-const SHADOW_SIZE: Vector2 = Vector2(26.0, 10.0)
-const SELECTION_BASE_RADIUS: float = 26.0
 
 @export var entity_id: int = -1
 
 var _selected: bool = false
-var _t: float = 0.0
 
 func _ready() -> void:
 	add_to_group("unit_views")
@@ -16,10 +13,6 @@ func _ready() -> void:
 
 func _exit_tree() -> void:
 	remove_from_group("unit_views")
-
-func _process(delta: float) -> void:
-	_t += delta
-	queue_redraw()
 
 func get_entity_id() -> int:
 	return entity_id
@@ -35,7 +28,7 @@ func set_selected(v: bool) -> void:
 
 func _draw() -> void:
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
-	draw_ellipse(Vector2(0.0, 11.0), SHADOW_SIZE, Color(0.0, 0.0, 0.0, 0.28))
+	draw_rect(Rect2(Vector2(-12.0, 6.0), Vector2(24.0, 8.0)), Color(0.0, 0.0, 0.0, 0.18), true)
 
 	var entity: Dictionary = Sim.get_entity(entity_id)
 	var is_broken: bool = bool(entity.get("is_broken", false))
@@ -62,9 +55,7 @@ func _draw() -> void:
 		draw_line(Vector2(-7.0, 7.0), Vector2(7.0, -7.0), Color(1.0, 0.2, 0.2, 1.0), 2.0)
 
 	if _selected:
-		var pulse: float = sin(_t * 4.0) * 2.0
-		var ring_radius: float = SELECTION_BASE_RADIUS + pulse
-		draw_arc(Vector2.ZERO, ring_radius, 0.0, TAU, 64, Color(0.62, 0.98, 0.62, 0.95), 2.0)
+		draw_arc(Vector2.ZERO, 26.0, 0.0, TAU, 48, Color(1.0, 1.0, 1.0, 1.0), 2.0)
 
 	_draw_direction_indicator()
 
