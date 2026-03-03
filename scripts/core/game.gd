@@ -17,6 +17,7 @@ func start_new_match() -> void:
 	Sim.set_resource(&"oxygen", 0.0)
 
 	var command_dome_id: int = Sim.spawn_entity(&"command_dome", Vector2(200, 200), 1, &"building")
+	Sim.spawn_entity(&"hls_lander", Vector2(240, 140), 1, &"building")
 	Sim.spawn_entity(&"scrap_heap", Vector2(300, 210), 1, &"building")
 	var clanker_a_id: int = Sim.spawn_entity(&"worker", Vector2(320, 240), 1, &"unit")
 	var clanker_b_id: int = Sim.spawn_entity(&"worker", Vector2(350, 260), 1, &"unit")

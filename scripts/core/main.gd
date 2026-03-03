@@ -1,6 +1,6 @@
 extends Node2D
 
-const BUILD_STAMP: String = "dev-0011"
+const BUILD_STAMP: String = "dev-0013"
 const PAN_SPEED: float = 320.0
 const CAMERA_ZOOM_LEVELS: Array[float] = [1.0, 2.0, 3.0]
 
@@ -45,8 +45,30 @@ func _process(delta: float) -> void:
 
 func log_startup_smoke_check() -> void:
 	print("=== Moon RTS Smoke Check ===")
-	print("Godot version: ", Engine.get_version_info())
+	var version_info: Dictionary = Engine.get_version_info()
+	var version_string: String = version_info.get("string", "<unknown>") as String
+	print("Godot version info: ", version_info)
+	print("Godot version string: ", version_string)
 	print("Project path: ", ProjectSettings.globalize_path("res://"))
+
+	var default_texture_filter: Variant = ProjectSettings.get_setting("rendering/textures/canvas_textures/default_texture_filter")
+	var snap_transforms: Variant = ProjectSettings.get_setting("rendering/2d/snap/snap_2d_transforms_to_pixel")
+	var snap_vertices: Variant = ProjectSettings.get_setting("rendering/2d/snap/snap_2d_vertices_to_pixel")
+	print("Default texture filter: ", default_texture_filter)
+	print("Snap transforms to pixel: ", snap_transforms)
+	print("Snap vertices to pixel: ", snap_vertices)
+	print("World viewport size: ", world_viewport.size)
+	print("Window size: ", get_window().size)
+
+	if RenderingServer.has_method("get_video_adapter_name"):
+		print("Renderer adapter: ", RenderingServer.call("get_video_adapter_name"))
+		if RenderingServer.has_method("get_video_adapter_vendor"):
+			print("Renderer vendor: ", RenderingServer.call("get_video_adapter_vendor"))
+		if RenderingServer.has_method("get_video_adapter_api_version"):
+			print("Renderer API version: ", RenderingServer.call("get_video_adapter_api_version"))
+	else:
+		print("Renderer adapter info unavailable via RenderingServer methods; see engine startup logs.")
+
 	var scene_path: String = "<no current scene>"
 	if get_tree().current_scene != null:
 		scene_path = String(get_tree().current_scene.scene_file_path)
