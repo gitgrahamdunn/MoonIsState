@@ -1,6 +1,6 @@
 extends Node2D
 
-const BUILD_STAMP: String = "dev-0013"
+const BUILD_STAMP: String = "dev-0014"
 const PAN_SPEED: float = 320.0
 const CAMERA_ZOOM_LEVELS: Array[float] = [1.0, 2.0, 3.0]
 
@@ -16,6 +16,9 @@ const CAMERA_ZOOM_LEVELS: Array[float] = [1.0, 2.0, 3.0]
 var _zoom_index: int = 0
 
 func _ready() -> void:
+	world_viewport.size = Vector2i(640, 360)
+	world_viewport_container.stretch = true
+
 	var hud_node: Control = get_node_or_null("UILayer/HUD") as Control
 	if hud_node != null:
 		hud_node.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -33,7 +36,12 @@ func _ready() -> void:
 	Sim.resources_changed.connect(_on_resources_changed)
 
 	Game.start_new_match()
+	_center_camera_on_focus_entity()
+	_reset_zoom()
 	log_startup_smoke_check()
+	await get_tree().process_frame
+	world_viewport.size = Vector2i(640, 360)
+	print("[Viewport] world_viewport.size=", world_viewport.size, " container rect=", world_viewport_container.size)
 	_on_tick_advanced(Sim.tick_count)
 	_on_resources_changed(Sim.resources)
 
@@ -58,6 +66,7 @@ func log_startup_smoke_check() -> void:
 	print("Snap transforms to pixel: ", snap_transforms)
 	print("Snap vertices to pixel: ", snap_vertices)
 	print("World viewport size: ", world_viewport.size)
+	print("World viewport container size: ", world_viewport_container.size)
 	print("Window size: ", get_window().size)
 
 	if RenderingServer.has_method("get_video_adapter_name"):
@@ -101,6 +110,17 @@ func _on_resources_changed(new_resources: Dictionary) -> void:
 	]
 
 func _unhandled_input(event: InputEvent) -> void:
+	if event is InputEventKey and event.is_pressed() and not event.is_echo():
+		var key_event: InputEventKey = event as InputEventKey
+		if key_event.keycode == KEY_C:
+			_center_camera_on_focus_entity()
+			get_viewport().set_input_as_handled()
+			return
+		if key_event.keycode == KEY_HOME:
+			_reset_zoom()
+			get_viewport().set_input_as_handled()
+			return
+
 	if event is InputEventMouseButton:
 		var mb: InputEventMouseButton = event as InputEventMouseButton
 		if mb.pressed and mb.button_index == MOUSE_BUTTON_WHEEL_UP:
@@ -128,24 +148,38 @@ func _unhandled_input(event: InputEvent) -> void:
 		selection_manager.call("handle_unhandled_input", event)
 
 func get_world_mouse_pos() -> Vector2:
-	var mouse_screen_pos: Vector2 = get_viewport().get_mouse_position()
-	var container_screen_pos: Vector2 = world_viewport_container.global_position
-	var container_size: Vector2 = world_viewport_container.size
-	if container_size.x <= 0.0 or container_size.y <= 0.0:
-		return world_camera.global_position
-	var local_pos: Vector2 = mouse_screen_pos - container_screen_pos
-	var clamped: Vector2 = Vector2(
-		clampf(local_pos.x, 0.0, container_size.x),
-		clampf(local_pos.y, 0.0, container_size.y)
-	)
-	var scale_ratio: Vector2 = Vector2(
-		float(world_viewport.size.x) / container_size.x,
-		float(world_viewport.size.y) / container_size.y
-	)
-	var viewport_pos: Vector2 = clamped * scale_ratio
-	var world_pos: Vector2 = ((viewport_pos - (Vector2(world_viewport.size) * 0.5)) / world_camera.zoom) + world_camera.global_position
-	return world_pos
+	var screen_pos: Vector2 = world_viewport_container.get_local_mouse_position()
+	var vp_size: Vector2 = Vector2(world_viewport.size)
+	var c_size: Vector2 = world_viewport_container.size
+	var uv: Vector2 = Vector2.ZERO
+	if c_size.x > 0.0 and c_size.y > 0.0:
+		uv = Vector2(screen_pos.x / c_size.x, screen_pos.y / c_size.y)
+	var vp_pos: Vector2 = Vector2(uv.x * vp_size.x, uv.y * vp_size.y)
+	return world_camera.get_screen_to_world(vp_pos)
 
 func _apply_camera_zoom() -> void:
 	var zoom_value: float = CAMERA_ZOOM_LEVELS[_zoom_index]
 	world_camera.zoom = Vector2(zoom_value, zoom_value)
+
+func _center_camera_on_focus_entity() -> void:
+	var focus_pos: Vector2 = Vector2.ZERO
+	var found_focus: bool = false
+	for entity_value: Variant in Sim.entities.values():
+		var entity: Dictionary = entity_value as Dictionary
+		if (entity.get("def_id", &"") as StringName) == &"hls_lander":
+			focus_pos = entity.get("pos", Vector2.ZERO) as Vector2
+			found_focus = true
+			break
+	if not found_focus:
+		for entity_value: Variant in Sim.entities.values():
+			var entity: Dictionary = entity_value as Dictionary
+			if (entity.get("def_id", &"") as StringName) == &"command_dome":
+				focus_pos = entity.get("pos", Vector2.ZERO) as Vector2
+				found_focus = true
+				break
+	if found_focus:
+		world_camera.position = focus_pos
+
+func _reset_zoom() -> void:
+	_zoom_index = 0
+	_apply_camera_zoom()
