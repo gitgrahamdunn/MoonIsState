@@ -96,15 +96,15 @@ static func _make_solar_array() -> Image:
 	return image
 
 static func _make_hls_lander() -> Image:
-	var image: Image = _new_image(56, 56)
-	_fill_rect(image, Rect2i(23, 8, 10, 30), WHITE)
-	_fill_rect(image, Rect2i(20, 14, 16, 6), GRAY)
-	_fill_rect(image, Rect2i(20, 28, 16, 8), GRAY)
-	_fill_rect(image, Rect2i(24, 18, 8, 4), LIGHT_BLUE)
-	_fill_rect(image, Rect2i(16, 36, 24, 6), DARK_GRAY)
-	_fill_rect(image, Rect2i(14, 42, 6, 3), ORANGE)
-	_fill_rect(image, Rect2i(36, 42, 6, 3), ORANGE)
-	_fill_rect(image, Rect2i(26, 42, 4, 6), GLOW)
+	var image: Image = _new_image(48, 64)
+	_fill_rect(image, Rect2i(20, 8, 8, 38), WHITE)
+	_fill_rect(image, Rect2i(17, 16, 14, 7), GRAY)
+	_fill_rect(image, Rect2i(17, 30, 14, 8), GRAY)
+	_fill_rect(image, Rect2i(20, 21, 8, 4), LIGHT_BLUE)
+	_fill_rect(image, Rect2i(12, 46, 24, 7), DARK_GRAY)
+	_fill_rect(image, Rect2i(10, 53, 6, 3), ORANGE)
+	_fill_rect(image, Rect2i(32, 53, 6, 3), ORANGE)
+	_fill_rect(image, Rect2i(22, 50, 4, 8), GLOW)
 	_outline_alpha(image, OUTLINE)
 	return image
 
