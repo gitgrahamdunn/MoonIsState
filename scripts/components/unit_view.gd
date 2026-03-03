@@ -1,6 +1,6 @@
 extends Node2D
 
-const BODY_RADIUS: float = 15.0
+const BODY_SIZE: Vector2 = Vector2(22.0, 18.0)
 
 @export var entity_id: int = -1
 
@@ -28,34 +28,40 @@ func set_selected(v: bool) -> void:
 
 func _draw() -> void:
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
-	draw_rect(Rect2(Vector2(-12.0, 6.0), Vector2(24.0, 8.0)), Color(0.0, 0.0, 0.0, 0.18), true)
+	draw_circle(Vector2(2.0, 10.0), 10.0, Color(0.0, 0.0, 0.0, 0.2))
 
 	var entity: Dictionary = Sim.get_entity(entity_id)
 	var is_broken: bool = bool(entity.get("is_broken", false))
 	var durability: float = float(entity.get("durability", 100.0))
 	var durability_ratio: float = clamp(durability / 100.0, 0.0, 1.0)
 
-	var body_color: Color = Color(0.77, 0.86, 0.96, 1.0)
-	var outline_color: Color = Color(0.14, 0.2, 0.28, 1.0)
+	var body_color: Color = Color(0.62, 0.67, 0.74, 1.0)
+	var outline_color: Color = Color(0.12, 0.14, 0.18, 1.0)
+	var highlight_color: Color = Color(0.84, 0.88, 0.94, 1.0)
 	if is_broken:
-		body_color = Color(0.3, 0.3, 0.34, 1.0)
-		outline_color = Color(0.5, 0.12, 0.12, 1.0)
-	draw_circle(Vector2.ZERO, BODY_RADIUS, body_color)
-	draw_arc(Vector2.ZERO, BODY_RADIUS, 0.0, TAU, 48, outline_color, 2.0)
+		body_color = Color(0.31, 0.31, 0.35, 1.0)
+		highlight_color = Color(0.53, 0.45, 0.45, 1.0)
+		outline_color = Color(0.42, 0.14, 0.14, 1.0)
 
-	var visor_center: Vector2 = Vector2(0.0, -2.0)
-	draw_circle(visor_center, 5.0, Color(0.3, 0.42, 0.56, 1.0))
-	draw_arc(visor_center, 5.0, 0.0, TAU, 24, Color(0.64, 0.81, 0.95, 0.9), 1.6)
+	var body_rect: Rect2 = Rect2(-BODY_SIZE * 0.5, BODY_SIZE)
+	draw_rect(body_rect, body_color, true)
+	draw_rect(body_rect, outline_color, false, 2.0)
+	var highlight_rect: Rect2 = Rect2(body_rect.position + Vector2(2.0, 2.0), Vector2(BODY_SIZE.x * 0.48, 4.0))
+	draw_rect(highlight_rect, highlight_color, true)
+	var visor_rect: Rect2 = Rect2(Vector2(-5.0, -2.0), Vector2(10.0, 5.0))
+	draw_rect(visor_rect, Color(0.3, 0.44, 0.64, 1.0), true)
+	draw_rect(visor_rect, Color(0.78, 0.9, 1.0, 0.8), false, 1.0)
 
 	var durability_start: float = -PI * 0.5
 	var durability_end: float = durability_start + (TAU * durability_ratio)
-	draw_arc(Vector2.ZERO, BODY_RADIUS + 4.0, durability_start, durability_end, 24, Color(0.32, 0.95, 0.46, 0.9), 1.5)
+	draw_arc(Vector2.ZERO, 15.0, durability_start, durability_end, 20, Color(0.3, 0.94, 0.44, 0.9), 2.0)
+
 	if is_broken:
-		draw_line(Vector2(-7.0, -7.0), Vector2(7.0, 7.0), Color(1.0, 0.2, 0.2, 1.0), 2.0)
-		draw_line(Vector2(-7.0, 7.0), Vector2(7.0, -7.0), Color(1.0, 0.2, 0.2, 1.0), 2.0)
+		draw_line(Vector2(-6.0, -6.0), Vector2(6.0, 6.0), Color(1.0, 0.2, 0.2, 1.0), 2.0)
+		draw_line(Vector2(-6.0, 6.0), Vector2(6.0, -6.0), Color(1.0, 0.2, 0.2, 1.0), 2.0)
 
 	if _selected:
-		draw_arc(Vector2.ZERO, 26.0, 0.0, TAU, 48, Color(1.0, 1.0, 1.0, 1.0), 2.0)
+		draw_arc(Vector2.ZERO, 22.0, 0.0, TAU, 32, Color(1.0, 1.0, 1.0, 1.0), 2.0)
 
 	_draw_direction_indicator()
 
@@ -75,9 +81,9 @@ func _draw_direction_indicator() -> void:
 	if direction == Vector2.ZERO:
 		return
 
-	var tip: Vector2 = direction * (BODY_RADIUS + 6.0)
-	var side: Vector2 = direction.orthogonal() * 3.0
-	var back: Vector2 = direction * (BODY_RADIUS - 1.0)
+	var tip: Vector2 = direction * 17.0
+	var side: Vector2 = direction.orthogonal() * 4.0
+	var back: Vector2 = direction * 10.0
 	var points: PackedVector2Array = PackedVector2Array([tip, back + side, back - side])
 	draw_colored_polygon(points, Color(0.95, 0.95, 1.0, 0.95))
 

@@ -1,17 +1,39 @@
-[gd_scene load_steps=5 format=3 uid="uid://dwx53ibq7j4kj"]
+[gd_scene load_steps=6 format=3 uid="uid://dwx53ibq7j4kj"]
 
 [ext_resource type="Script" path="res://scripts/core/main.gd" id="1_3aw8l"]
 [ext_resource type="Script" path="res://scripts/core/world_spawner.gd" id="2_wv6qq"]
 [ext_resource type="Script" path="res://scripts/ui/selection_manager.gd" id="3_nl0u2"]
 [ext_resource type="Script" path="res://scripts/ui/selection_overlay.gd" id="4_5vx8x"]
 [ext_resource type="Script" path="res://scripts/ui/launch_console.gd" id="5_lc1"]
+[ext_resource type="Script" path="res://scripts/components/ground.gd" id="6_f3j0w"]
 
 [node name="Main" type="Node2D"]
 script = ExtResource("1_3aw8l")
 
-[node name="World" type="Node2D" parent="."]
+[node name="WorldViewportContainer" type="SubViewportContainer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+stretch = true
 
-[node name="WorldSpawner" type="Node2D" parent="World"]
+[node name="WorldViewport" type="SubViewport" parent="WorldViewportContainer"]
+size = Vector2i(640, 360)
+handle_input_locally = false
+render_target_update_mode = 4
+
+[node name="World" type="Node2D" parent="WorldViewportContainer/WorldViewport"]
+
+[node name="Ground" type="Node2D" parent="WorldViewportContainer/WorldViewport/World"]
+script = ExtResource("6_f3j0w")
+
+[node name="Camera2D" type="Camera2D" parent="WorldViewportContainer/WorldViewport/World"]
+position = Vector2(640, 360)
+enabled = true
+
+[node name="WorldSpawner" type="Node2D" parent="WorldViewportContainer/WorldViewport/World"]
 script = ExtResource("2_wv6qq")
 
 [node name="UILayer" type="CanvasLayer" parent="."]
@@ -117,4 +139,4 @@ script = ExtResource("4_5vx8x")
 
 [node name="SelectionManager" type="Node" parent="."]
 script = ExtResource("3_nl0u2")
-world_path = NodePath("../World")
+world_path = NodePath("../WorldViewportContainer/WorldViewport/World")
