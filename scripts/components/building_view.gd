@@ -12,7 +12,7 @@ func _draw() -> void:
 	var e: Dictionary = Sim.get_entity(entity_id)
 	var def_id: StringName = e.get("def_id", &"") as StringName
 
-	draw_ellipse(Vector2(0.0, 20.0), Vector2(32.0, 12.0), Color(0.0, 0.0, 0.0, 0.25))
+	draw_rect(Rect2(Vector2(-14.0, 12.0), Vector2(28.0, 8.0)), Color(0.0, 0.0, 0.0, 0.2), true)
 	if def_id == &"solar_array":
 		_draw_solar_array()
 	elif def_id == &"launchpad":
