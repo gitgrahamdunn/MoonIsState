@@ -22,7 +22,7 @@ func _on_entity_spawned(entity_id: int) -> void:
 	if entity.is_empty():
 		return
 
-	var kind: StringName = entity.get("kind", &"")
+	var kind: StringName = entity.get("kind", &"") as StringName
 	var view: Node2D = null
 	if kind == &"unit":
 		view = UNIT_VIEW_SCENE.instantiate()
