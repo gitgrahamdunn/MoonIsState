@@ -21,11 +21,15 @@ signal build_button_clicked(building_def_id: StringName)
 @onready var build_hls_button: Button = $LeftBuildPanel/BuildVBox/BuildHLSButton
 @onready var build_command_dome_button: Button = $LeftBuildPanel/BuildVBox/BuildCommandDomeButton
 @onready var build_solar_array_button: Button = $LeftBuildPanel/BuildVBox/BuildSolarArrayButton
-@onready var build_regolith_extractor_button: Button = $LeftBuildPanel/BuildVBox/BuildRegolithExtractorButton
+@onready var build_regolith_collector_button: Button = $LeftBuildPanel/BuildVBox/BuildRegolithCollectorButton
 @onready var build_refinery_button: Button = $LeftBuildPanel/BuildVBox/BuildRefineryButton
 
 @onready var tooltip_panel: PanelContainer = $HoverTooltip
 @onready var tooltip_label: Label = $HoverTooltip/TooltipLabel
+
+@onready var objective_solar_check: CheckBox = $ObjectivesPanel/ObjectivesVBox/SolarObjectiveCheck
+@onready var objective_regolith_check: CheckBox = $ObjectivesPanel/ObjectivesVBox/RegolithObjectiveCheck
+@onready var objective_metal_check: CheckBox = $ObjectivesPanel/ObjectivesVBox/MetalObjectiveCheck
 
 var _selected_entity_id: int = -1
 var _last_displayed_second: int = -1
@@ -38,24 +42,30 @@ func _ready() -> void:
 	tooltip_panel.visible = false
 	tooltip_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
+	objective_solar_check.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	objective_regolith_check.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	objective_metal_check.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
 	_setup_build_button(build_hls_button, "Build HLS Lander\nLanding support and logistics hub")
 	_setup_build_button(build_command_dome_button, "Build Command Dome\nColony command and control center")
 	_setup_build_button(build_solar_array_button, "Build Solar Array\nProduces Power: +2/s")
-	_setup_build_button(build_regolith_extractor_button, "Build Regolith Extractor\nProduces Regolith: +2/s")
+	_setup_build_button(build_regolith_collector_button, "Build Regolith Collector\nProduces Regolith: +2/s")
 	_setup_build_button(build_refinery_button, "Build Refinery\nConverts Regolith into Metal")
 
 	build_hls_button.pressed.connect(func() -> void: _on_build_clicked(&"hls_lander"))
 	build_command_dome_button.pressed.connect(func() -> void: _on_build_clicked(&"command_dome"))
 	build_solar_array_button.pressed.connect(func() -> void: _on_build_clicked(&"solar_array"))
-	build_regolith_extractor_button.pressed.connect(func() -> void: _on_build_clicked(&"regolith_extractor"))
+	build_regolith_collector_button.pressed.connect(func() -> void: _on_build_clicked(&"regolith_collector"))
 	build_refinery_button.pressed.connect(func() -> void: _on_build_clicked(&"refinery"))
 
 	Sim.resources_changed.connect(_on_resources_changed)
 	Sim.tick_advanced.connect(_on_tick_advanced)
 	Sim.entity_updated.connect(_on_entity_updated)
+	Sim.entity_spawned.connect(_on_entity_spawned)
 
 	_on_resources_changed(Sim.resources)
 	_on_tick_advanced(Sim.tick_count)
+	_update_objectives()
 	_show_empty_selection()
 
 func set_build_stamp(build_stamp: String) -> void:
@@ -96,6 +106,7 @@ func _on_resources_changed(new_resources: Dictionary) -> void:
 	metal_label.text = "M Metal: %.1f" % float(new_resources.get(&"metal", 0.0))
 	power_label.text = "P Power: %.1f" % float(new_resources.get(&"power", 0.0))
 	oxygen_label.text = "O Oxygen: %.1f" % float(new_resources.get(&"oxygen", 0.0))
+	_update_objectives()
 
 func _on_tick_advanced(new_tick_count: int) -> void:
 	var seconds_total: int = int(floor(float(new_tick_count) / float(Sim.TICKS_PER_SECOND)))
@@ -111,9 +122,28 @@ func _on_tick_advanced(new_tick_count: int) -> void:
 	time_label.text = "Day %d  %02d:%02d  |  Tick %d" % [day, hours, minutes, new_tick_count]
 
 func _on_entity_updated(entity_id: int) -> void:
-	if entity_id != _selected_entity_id:
-		return
-	set_selected_entity(_selected_entity_id)
+	if entity_id == _selected_entity_id:
+		set_selected_entity(_selected_entity_id)
+	_update_objectives()
+
+func _on_entity_spawned(_entity_id: int) -> void:
+	_update_objectives()
+
+func _update_objectives() -> void:
+	var has_solar_array: bool = false
+	var has_regolith_collector: bool = false
+	for entity_variant: Variant in Sim.entities.values():
+		var entity: Dictionary = entity_variant as Dictionary
+		var def_id: StringName = entity.get("def_id", &"") as StringName
+		if def_id == &"solar_array":
+			has_solar_array = true
+		elif def_id == &"regolith_collector":
+			has_regolith_collector = true
+
+	var metal_value: float = Sim.get_resource(&"metal")
+	objective_solar_check.button_pressed = has_solar_array
+	objective_regolith_check.button_pressed = has_regolith_collector
+	objective_metal_check.button_pressed = metal_value >= 50.0
 
 func _on_build_clicked(building_def_id: StringName) -> void:
 	print("[HUD] build clicked: %s" % String(building_def_id))
@@ -142,7 +172,7 @@ func _get_entity_status_line(entity: Dictionary) -> String:
 	var def_id: StringName = entity.get("def_id", &"") as StringName
 	if def_id == &"solar_array":
 		return "Producing: +2 Power/s"
-	if def_id == &"regolith_extractor":
+	if def_id == &"regolith_collector":
 		return "Producing: +2 Regolith/s"
 	if def_id == &"refinery":
 		return "Refining regolith into metal"

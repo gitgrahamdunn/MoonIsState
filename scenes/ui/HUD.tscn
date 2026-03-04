@@ -227,13 +227,13 @@ theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_button_pressed")
 text = "Solar Array"
 
-[node name="BuildRegolithExtractorButton" type="Button" parent="LeftBuildPanel/BuildVBox"]
+[node name="BuildRegolithCollectorButton" type="Button" parent="LeftBuildPanel/BuildVBox"]
 layout_mode = 2
 mouse_filter = 0
 theme_override_styles/normal = SubResource("StyleBoxFlat_button")
 theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_button_pressed")
-text = "Regolith Extractor"
+text = "Regolith Collector"
 
 [node name="BuildRefineryButton" type="Button" parent="LeftBuildPanel/BuildVBox"]
 layout_mode = 2
@@ -248,6 +248,41 @@ layout_mode = 2
 autowrap_mode = 2
 modulate = Color(0.72, 0.75, 0.82, 1)
 text = "Click a building, then click placement location."
+
+
+[node name="ObjectivesPanel" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 1
+anchor_top = 0.0
+anchor_bottom = 0.0
+offset_left = 232.0
+offset_top = 64.0
+offset_right = 510.0
+offset_bottom = 260.0
+mouse_filter = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="ObjectivesVBox" type="VBoxContainer" parent="ObjectivesPanel"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 5
+
+[node name="ObjectivesHeader" type="Label" parent="ObjectivesPanel/ObjectivesVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "FIRST LANDING"
+
+[node name="SolarObjectiveCheck" type="CheckBox" parent="ObjectivesPanel/ObjectivesVBox"]
+layout_mode = 2
+text = "Place Solar Array"
+
+[node name="RegolithObjectiveCheck" type="CheckBox" parent="ObjectivesPanel/ObjectivesVBox"]
+layout_mode = 2
+text = "Place Regolith Collector"
+
+[node name="MetalObjectiveCheck" type="CheckBox" parent="ObjectivesPanel/ObjectivesVBox"]
+layout_mode = 2
+text = "Produce Metal (>= 50)"
 
 [node name="InfoPanel" type="PanelContainer" parent="."]
 layout_mode = 1
