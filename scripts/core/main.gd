@@ -1,6 +1,6 @@
 extends Node2D
 
-const BUILD_STAMP: String = "dev-0014"
+const BUILD_STAMP: String = "dev-0015-center-camera"
 const PAN_SPEED: float = 320.0
 const CAMERA_ZOOM_LEVELS: Array[float] = [1.0, 2.0, 3.0]
 
@@ -11,7 +11,7 @@ const CAMERA_ZOOM_LEVELS: Array[float] = [1.0, 2.0, 3.0]
 @onready var launch_console: Control = $UILayer/HUD/LaunchConsole
 @onready var world_viewport_container: SubViewportContainer = $WorldViewportContainer
 @onready var world_viewport: SubViewport = $WorldViewportContainer/WorldViewport
-@onready var world_camera: Camera2D = $WorldViewportContainer/WorldViewport/World/Camera2D
+@onready var world_camera: Camera2D = get_node_or_null("WorldViewportContainer/WorldViewport/World/WorldCamera") as Camera2D
 
 var _zoom_index: int = 0
 
@@ -36,7 +36,7 @@ func _ready() -> void:
 	Sim.resources_changed.connect(_on_resources_changed)
 
 	Game.start_new_match()
-	_center_camera_on_focus_entity()
+	_center_camera_on_lander()
 	_reset_zoom()
 	log_startup_smoke_check()
 	await get_tree().process_frame
@@ -113,7 +113,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.is_pressed() and not event.is_echo():
 		var key_event: InputEventKey = event as InputEventKey
 		if key_event.keycode == KEY_C:
-			_center_camera_on_focus_entity()
+			_center_camera_on_lander()
 			get_viewport().set_input_as_handled()
 			return
 		if key_event.keycode == KEY_HOME:
@@ -161,24 +161,42 @@ func _apply_camera_zoom() -> void:
 	var zoom_value: float = CAMERA_ZOOM_LEVELS[_zoom_index]
 	world_camera.zoom = Vector2(zoom_value, zoom_value)
 
-func _center_camera_on_focus_entity() -> void:
+func _center_camera_on_lander() -> void:
+	if world_camera == null:
+		push_warning("[Camera] WorldCamera not found; cannot center.")
+		return
+
 	var focus_pos: Vector2 = Vector2.ZERO
-	var found_focus: bool = false
-	for entity_value: Variant in Sim.entities.values():
-		var entity: Dictionary = entity_value as Dictionary
-		if (entity.get("def_id", &"") as StringName) == &"hls_lander":
-			focus_pos = entity.get("pos", Vector2.ZERO) as Vector2
-			found_focus = true
+	var found: bool = false
+
+	for idv: Variant in Sim.entities.keys():
+		var id: int = int(idv)
+		var e: Dictionary = Sim.entities[id] as Dictionary
+		var def_id: StringName = e.get("def_id", &"") as StringName
+		var pos: Vector2 = e.get("pos", Vector2.ZERO) as Vector2
+		if def_id == &"hls_lander":
+			focus_pos = pos
+			found = true
 			break
-	if not found_focus:
-		for entity_value: Variant in Sim.entities.values():
-			var entity: Dictionary = entity_value as Dictionary
-			if (entity.get("def_id", &"") as StringName) == &"command_dome":
-				focus_pos = entity.get("pos", Vector2.ZERO) as Vector2
-				found_focus = true
+
+	if not found:
+		for idv: Variant in Sim.entities.keys():
+			var id2: int = int(idv)
+			var e2: Dictionary = Sim.entities[id2] as Dictionary
+			var def_id2: StringName = e2.get("def_id", &"") as StringName
+			var pos2: Vector2 = e2.get("pos", Vector2.ZERO) as Vector2
+			if def_id2 == &"command_dome":
+				focus_pos = pos2
+				found = true
 				break
-	if found_focus:
-		world_camera.position = focus_pos
+
+	if not found and Sim.entities.size() > 0:
+		var first_id: int = int(Sim.entities.keys()[0])
+		var e3: Dictionary = Sim.entities[first_id] as Dictionary
+		focus_pos = e3.get("pos", Vector2.ZERO) as Vector2
+
+	world_camera.global_position = focus_pos
+	print("[Camera] Centered on ", focus_pos)
 
 func _reset_zoom() -> void:
 	_zoom_index = 0
