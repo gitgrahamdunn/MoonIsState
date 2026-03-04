@@ -3,9 +3,13 @@ extends Node
 const CLICK_RADIUS: float = 40.0
 
 var selected_entity_ids: Array[int] = []
+var _hud: Node = null
 
 func _ready() -> void:
 	add_to_group("selection_manager")
+	var main: Node = get_tree().current_scene
+	if main != null:
+		_hud = main.get_node_or_null("UILayer/HUD")
 
 func _exit_tree() -> void:
 	remove_from_group("selection_manager")
@@ -43,11 +47,13 @@ func _unhandled_input(event: InputEvent) -> void:
 func _select_single(entity_id: int) -> void:
 	selected_entity_ids = [entity_id]
 	_apply_selection_to_views()
+	_update_hud_selection(entity_id)
 	print("[Select] selected: ", selected_entity_ids)
 
 func _clear_selection() -> void:
 	selected_entity_ids.clear()
 	_apply_selection_to_views()
+	_update_hud_selection(-1)
 	print("[Select] cleared")
 
 func _apply_selection_to_views() -> void:
@@ -73,3 +79,11 @@ func _try_select_at(world_pos: Vector2) -> void:
 		_select_single(best_id)
 	else:
 		_clear_selection()
+
+func _update_hud_selection(entity_id: int) -> void:
+	if _hud == null:
+		var main: Node = get_tree().current_scene
+		if main != null:
+			_hud = main.get_node_or_null("UILayer/HUD")
+	if _hud != null and _hud.has_method("set_selected_entity"):
+		_hud.call("set_selected_entity", entity_id)
