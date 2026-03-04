@@ -10,32 +10,19 @@
 [node name="Main" type="Node2D"]
 script = ExtResource("1_3aw8l")
 
-[node name="WorldViewportContainer" type="SubViewportContainer" parent="."]
-subviewport = NodePath("WorldViewport")
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-stretch = true
+[node name="World" type="Node2D" parent="."]
 
-[node name="WorldViewport" type="SubViewport" parent="WorldViewportContainer"]
-size = Vector2i(640, 360)
-handle_input_locally = false
-render_target_update_mode = 4
-
-[node name="World" type="Node2D" parent="WorldViewportContainer/WorldViewport"]
-
-[node name="Ground" type="Node2D" parent="WorldViewportContainer/WorldViewport/World"]
+[node name="Ground" type="Node2D" parent="World"]
 script = ExtResource("6_f3j0w")
 
-[node name="WorldCamera" type="Camera2D" parent="WorldViewportContainer/WorldViewport/World"]
+[node name="WorldCamera" type="Camera2D" parent="World"]
 position = Vector2(640, 360)
 enabled = true
+current = true
+position_smoothing_enabled = false
 zoom = Vector2(1, 1)
 
-[node name="WorldSpawner" type="Node2D" parent="WorldViewportContainer/WorldViewport/World"]
+[node name="WorldSpawner" type="Node2D" parent="World"]
 script = ExtResource("2_wv6qq")
 
 [node name="UILayer" type="CanvasLayer" parent="."]
@@ -141,4 +128,4 @@ script = ExtResource("4_5vx8x")
 
 [node name="SelectionManager" type="Node" parent="."]
 script = ExtResource("3_nl0u2")
-world_path = NodePath("../WorldViewportContainer/WorldViewport/World")
+world_path = NodePath("../World")

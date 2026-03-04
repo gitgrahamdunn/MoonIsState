@@ -21,6 +21,7 @@ func start_new_match() -> void:
 	var command_dome_id: int = Sim.spawn_entity(&"command_dome", start_pos + Vector2(72.0, 24.0), 1, &"building")
 	var worker_id: int = Sim.spawn_entity(&"worker", start_pos + Vector2(54.0, 76.0), 1, &"unit")
 	Sim.spawn_entity(&"scrap_heap", start_pos + Vector2(128.0, 40.0), 1, &"building")
+	print("[Game] Sim.entities.size=", Sim.entities.size())
 	_verify_spawn_kinds(lander_id, command_dome_id, [worker_id])
 
 func load_match(path: String) -> void:

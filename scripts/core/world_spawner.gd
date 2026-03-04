@@ -8,9 +8,14 @@ var _entity_views: Dictionary = {}
 func _ready() -> void:
 	Sim.entity_spawned.connect(_on_entity_spawned)
 	Sim.entity_despawned.connect(_on_entity_despawned)
-	for entity_id_v: Variant in Sim.entities.keys():
-		_on_entity_spawned(int(entity_id_v))
-	print("[WorldSpawner] seeded views for existing entities: ", Sim.entities.size())
+	call_deferred("_seed_existing_entities")
+
+func _seed_existing_entities() -> void:
+	var count: int = 0
+	for idv: Variant in Sim.entities.keys():
+		_on_entity_spawned(int(idv))
+		count += 1
+	print("[WorldSpawner] seeded views for existing entities: ", count)
 
 func _on_entity_spawned(entity_id: int) -> void:
 	var entity: Dictionary = Sim.get_entity(entity_id)

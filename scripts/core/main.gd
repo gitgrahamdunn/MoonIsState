@@ -1,6 +1,6 @@
 extends Node2D
 
-const BUILD_STAMP: String = "dev-0015-center-camera"
+const BUILD_STAMP: String = "dev-0017-fix-subviewport-mouse-seed"
 const PAN_SPEED: float = 320.0
 const CAMERA_ZOOM_LEVELS: Array[float] = [1.0, 2.0, 3.0]
 
@@ -9,16 +9,11 @@ const CAMERA_ZOOM_LEVELS: Array[float] = [1.0, 2.0, 3.0]
 @onready var resources_label: Label = $UILayer/HUD/ResourcesLabel
 @onready var selection_manager: Node = get_node_or_null("SelectionManager")
 @onready var launch_console: Control = $UILayer/HUD/LaunchConsole
-@onready var world_viewport_container: SubViewportContainer = $WorldViewportContainer
-@onready var world_viewport: SubViewport = $WorldViewportContainer/WorldViewport
-@onready var world_camera: Camera2D = get_node_or_null("WorldViewportContainer/WorldViewport/World/WorldCamera") as Camera2D
+@onready var world_camera: Camera2D = get_node_or_null("World/WorldCamera") as Camera2D
 
 var _zoom_index: int = 0
 
 func _ready() -> void:
-	world_viewport.size = Vector2i(640, 360)
-	world_viewport_container.stretch = true
-
 	var hud_node: Control = get_node_or_null("UILayer/HUD") as Control
 	if hud_node != null:
 		hud_node.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -27,8 +22,6 @@ func _ready() -> void:
 				var child_control: Control = child_node as Control
 				child_control.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
-	RenderingServer.viewport_set_snap_2d_transforms_to_pixel(world_viewport.get_viewport_rid(), true)
-	RenderingServer.viewport_set_snap_2d_vertices_to_pixel(world_viewport.get_viewport_rid(), true)
 	_apply_camera_zoom()
 
 	title_label.text = "MoonIsState  [" + BUILD_STAMP + "]"
@@ -40,8 +33,6 @@ func _ready() -> void:
 	_reset_zoom()
 	log_startup_smoke_check()
 	await get_tree().process_frame
-	world_viewport.size = Vector2i(640, 360)
-	print("[Viewport] world_viewport.size=", world_viewport.size, " container rect=", world_viewport_container.size)
 	_on_tick_advanced(Sim.tick_count)
 	_on_resources_changed(Sim.resources)
 
@@ -65,8 +56,6 @@ func log_startup_smoke_check() -> void:
 	print("Default texture filter: ", default_texture_filter)
 	print("Snap transforms to pixel: ", snap_transforms)
 	print("Snap vertices to pixel: ", snap_vertices)
-	print("World viewport size: ", world_viewport.size)
-	print("World viewport container size: ", world_viewport_container.size)
 	print("Window size: ", get_window().size)
 
 	if RenderingServer.has_method("get_video_adapter_name"):
@@ -148,14 +137,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		selection_manager.call("handle_unhandled_input", event)
 
 func get_world_mouse_pos() -> Vector2:
-	var screen_pos: Vector2 = world_viewport_container.get_local_mouse_position()
-	var vp_size: Vector2 = Vector2(world_viewport.size)
-	var c_size: Vector2 = world_viewport_container.size
-	var uv: Vector2 = Vector2.ZERO
-	if c_size.x > 0.0 and c_size.y > 0.0:
-		uv = Vector2(screen_pos.x / c_size.x, screen_pos.y / c_size.y)
-	var vp_pos: Vector2 = Vector2(uv.x * vp_size.x, uv.y * vp_size.y)
-	return world_camera.get_screen_to_world(vp_pos)
+	return get_global_mouse_position()
 
 func _apply_camera_zoom() -> void:
 	var zoom_value: float = CAMERA_ZOOM_LEVELS[_zoom_index]
