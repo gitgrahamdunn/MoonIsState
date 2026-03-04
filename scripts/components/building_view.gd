@@ -4,9 +4,27 @@ const AssetFactory = preload("res://scripts/core/asset_factory.gd")
 
 @export var entity_id: int = -1
 
+var _hovered: bool = false
+
 func _ready() -> void:
+	add_to_group("building_views")
 	Sim.entity_updated.connect(_on_entity_updated)
 	_update_from_sim()
+
+func _exit_tree() -> void:
+	remove_from_group("building_views")
+
+func get_entity_id() -> int:
+	return entity_id
+
+func get_world_pos() -> Vector2:
+	return global_position
+
+func set_hovered(v: bool) -> void:
+	if _hovered == v:
+		return
+	_hovered = v
+	queue_redraw()
 
 func _draw() -> void:
 	var e: Dictionary = Sim.get_entity(entity_id)
@@ -25,6 +43,8 @@ func _draw() -> void:
 
 	var tex: Texture2D = AssetFactory.get_tex(tex_key)
 	draw_texture(tex, -tex.get_size() * 0.5)
+	if _hovered:
+		draw_arc(Vector2.ZERO, 30.0, 0.0, TAU, 40, Color(1.0, 0.9, 0.2, 0.9), 2.0)
 	_draw_construction_overlay(e)
 
 func _draw_construction_overlay(entity: Dictionary) -> void:
