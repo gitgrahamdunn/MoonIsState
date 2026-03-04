@@ -1,0 +1,220 @@
+[gd_scene load_steps=5 format=3 uid="uid://dei3a16e11v3a"]
+
+[ext_resource type="Script" path="res://scripts/ui/hud.gd" id="1_hud"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_topbar"]
+bg_color = Color(0.118, 0.145, 0.196, 0.95)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.278, 0.325, 0.412, 1)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+shadow_color = Color(0, 0, 0, 0.25)
+shadow_size = 1
+content_margin_left = 10.0
+content_margin_top = 8.0
+content_margin_right = 10.0
+content_margin_bottom = 8.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
+bg_color = Color(0.098, 0.122, 0.169, 0.94)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.251, 0.298, 0.384, 1)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+shadow_color = Color(0, 0, 0, 0.25)
+shadow_size = 1
+content_margin_left = 10.0
+content_margin_top = 10.0
+content_margin_right = 10.0
+content_margin_bottom = 10.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button"]
+bg_color = Color(0.149, 0.184, 0.243, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.345, 0.412, 0.522, 1)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+content_margin_left = 6.0
+content_margin_top = 4.0
+content_margin_right = 6.0
+content_margin_bottom = 4.0
+
+[node name="HUD" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1_hud")
+
+[node name="TopBar" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 56.0
+grow_horizontal = 2
+mouse_filter = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_topbar")
+
+[node name="TopRow" type="HBoxContainer" parent="TopBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="TitleLabel" type="Label" parent="TopBar/TopRow"]
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_font_sizes/font_size = 20
+text = "Moon Base Manager"
+
+[node name="TopSpacerLeft" type="Control" parent="TopBar/TopRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ResourceRow" type="HBoxContainer" parent="TopBar/TopRow"]
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_constants/separation = 8
+
+[node name="CreditsLabel" type="Label" parent="TopBar/TopRow/ResourceRow"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "$ Credits: 0"
+
+[node name="RegolithLabel" type="Label" parent="TopBar/TopRow/ResourceRow"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "R Regolith: 0"
+
+[node name="MetalLabel" type="Label" parent="TopBar/TopRow/ResourceRow"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "M Metal: 0"
+
+[node name="PowerLabel" type="Label" parent="TopBar/TopRow/ResourceRow"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "P Power: 0"
+
+[node name="OxygenLabel" type="Label" parent="TopBar/TopRow/ResourceRow"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "O Oxygen: 0"
+
+[node name="TopSpacerRight" type="Control" parent="TopBar/TopRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="TimeLabel" type="Label" parent="TopBar/TopRow"]
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_font_sizes/font_size = 15
+text = "Day 1  00:00"
+
+[node name="BuildStampLabel" type="Label" parent="TopBar/TopRow"]
+layout_mode = 2
+size_flags_vertical = 4
+horizontal_alignment = 2
+modulate = Color(0.72, 0.75, 0.82, 1)
+theme_override_font_sizes/font_size = 11
+text = "dev-build"
+
+[node name="LeftBuildPanel" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 1
+anchor_top = 0.0
+anchor_bottom = 0.0
+offset_top = 64.0
+offset_right = 220.0
+offset_bottom = 420.0
+mouse_filter = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="BuildVBox" type="VBoxContainer" parent="LeftBuildPanel"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="BuildHeader" type="Label" parent="LeftBuildPanel/BuildVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Build"
+
+[node name="BuildHLSButton" type="Button" parent="LeftBuildPanel/BuildVBox"]
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_button")
+text = "HLS Lander"
+
+[node name="BuildCommandDomeButton" type="Button" parent="LeftBuildPanel/BuildVBox"]
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_button")
+text = "Command Dome"
+
+[node name="BuildSolarArrayButton" type="Button" parent="LeftBuildPanel/BuildVBox"]
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_button")
+text = "Solar Array"
+
+[node name="BuildRegolithExtractorButton" type="Button" parent="LeftBuildPanel/BuildVBox"]
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_button")
+text = "Regolith Extractor"
+
+[node name="BuildRefineryButton" type="Button" parent="LeftBuildPanel/BuildVBox"]
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_button")
+text = "Refinery"
+
+[node name="BuildHelpLabel" type="Label" parent="LeftBuildPanel/BuildVBox"]
+layout_mode = 2
+autowrap_mode = 2
+modulate = Color(0.72, 0.75, 0.82, 1)
+text = "Click a building, then click placement location."
+
+[node name="InfoPanel" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 12.0
+offset_top = -132.0
+offset_right = -12.0
+offset_bottom = -12.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="InfoVBox" type="VBoxContainer" parent="InfoPanel"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="SelectedLabel" type="Label" parent="InfoPanel/InfoVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "Selected: Nothing selected"
+
+[node name="StatusLabel" type="Label" parent="InfoPanel/InfoVBox"]
+layout_mode = 2
+text = "Status: Idle"
+
+[node name="StatsLabel" type="Label" parent="InfoPanel/InfoVBox"]
+layout_mode = 2
+text = "Stats: --"

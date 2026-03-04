@@ -1,40 +1,25 @@
 extends Node2D
 
-const BUILD_STAMP: String = "dev-0017-fix-subviewport-mouse-seed"
+const BUILD_STAMP: String = "dev-0018-hud-polish"
 const PAN_SPEED: float = 320.0
 const CAMERA_ZOOM_LEVELS: Array[float] = [1.0, 2.0, 3.0]
 
-@onready var title_label: Label = $UILayer/HUD/TitleLabel
-@onready var tick_label: Label = $UILayer/HUD/TickLabel
-@onready var resources_label: Label = $UILayer/HUD/ResourcesLabel
+@onready var hud: Control = get_node_or_null("UILayer/HUD") as Control
 @onready var selection_manager: Node = get_node_or_null("SelectionManager")
-@onready var launch_console: Control = $UILayer/HUD/LaunchConsole
 @onready var world_camera: Camera2D = get_node_or_null("World/WorldCamera") as Camera2D
 
 var _zoom_index: int = 0
 
 func _ready() -> void:
-	var hud_node: Control = get_node_or_null("UILayer/HUD") as Control
-	if hud_node != null:
-		hud_node.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		for child_node: Node in hud_node.get_children():
-			if child_node is Control and child_node.name != "LaunchConsole":
-				var child_control: Control = child_node as Control
-				child_control.mouse_filter = Control.MOUSE_FILTER_IGNORE
-
 	_apply_camera_zoom()
-
-	title_label.text = "MoonIsState  [" + BUILD_STAMP + "]"
-	Sim.tick_advanced.connect(_on_tick_advanced)
-	Sim.resources_changed.connect(_on_resources_changed)
 
 	Game.start_new_match()
 	_center_camera_on_lander()
 	_reset_zoom()
 	log_startup_smoke_check()
 	await get_tree().process_frame
-	_on_tick_advanced(Sim.tick_count)
-	_on_resources_changed(Sim.resources)
+	if hud != null and hud.has_method("set_build_stamp"):
+		hud.call("set_build_stamp", BUILD_STAMP)
 
 func _process(delta: float) -> void:
 	var input_vec: Vector2 = Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
@@ -85,19 +70,6 @@ func log_startup_smoke_check() -> void:
 	print("Sim ticks per second: ", Sim.TICKS_PER_SECOND)
 	print("Initial entity count after match start: ", Sim.entities.size())
 
-func _on_tick_advanced(new_tick_count: int) -> void:
-	var seconds: float = float(new_tick_count) / float(Sim.TICKS_PER_SECOND)
-	tick_label.text = "Tick: %d (%.1fs)" % [new_tick_count, seconds]
-
-func _on_resources_changed(new_resources: Dictionary) -> void:
-	resources_label.text = "Regolith: %.1f\nMetal: %.1f\nPower: %.1f\nOxygen: %.1f\nScrap: %.1f" % [
-		float(new_resources.get(&"regolith", 0.0)),
-		float(new_resources.get(&"metal", 0.0)),
-		float(new_resources.get(&"power", 0.0)),
-		float(new_resources.get(&"oxygen", 0.0)),
-		float(new_resources.get(&"scrap", 0.0)),
-	]
-
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.is_pressed() and not event.is_echo():
 		var key_event: InputEventKey = event as InputEventKey
@@ -122,16 +94,6 @@ func _unhandled_input(event: InputEvent) -> void:
 			_apply_camera_zoom()
 			get_viewport().set_input_as_handled()
 			return
-		if mb.pressed and mb.button_index == MOUSE_BUTTON_LEFT and launch_console != null:
-			if launch_console.has_method("wants_build_placement") and launch_console.call("wants_build_placement") as bool:
-				var world_pos: Vector2 = get_world_mouse_pos()
-				var selected_ids: Array[int] = []
-				if selection_manager != null:
-					selected_ids = selection_manager.get("selected_entity_ids") as Array[int]
-				var consumed: bool = launch_console.call("try_handle_left_click", world_pos, selected_ids) as bool
-				if consumed:
-					get_viewport().set_input_as_handled()
-					return
 
 	if selection_manager != null and selection_manager.has_method("handle_unhandled_input"):
 		selection_manager.call("handle_unhandled_input", event)
