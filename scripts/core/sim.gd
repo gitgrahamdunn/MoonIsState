@@ -5,9 +5,13 @@ signal entity_despawned(entity_id: int)
 signal entity_updated(entity_id: int)
 signal resources_changed(resources: Dictionary)
 signal tick_advanced(tick_count: int)
+signal fx_popup(world_pos: Vector2, text: String, kind: StringName)
+signal fx_burst(world_pos: Vector2, kind: StringName)
+signal alerts_changed(alerts: Array[String])
 
 const TICKS_PER_SECOND: int = 20
 const DT: float = 1.0 / float(TICKS_PER_SECOND)
+const DEBUG: bool = false
 const MOVE_EPSILON: float = 4.0
 const CLANKER_DURABILITY_MAX: float = 100.0
 const CLANKER_DECAY_IDLE_PER_SEC: float = 0.02
@@ -47,6 +51,7 @@ func reset() -> void:
 	_launchpad_warning_printed = false
 	_resources_dirty = true
 	emit_signal("resources_changed", resources.duplicate(true))
+	emit_signal("alerts_changed", [] as Array[String])
 	_resources_dirty = false
 
 func step() -> void:
@@ -92,7 +97,8 @@ func _handle_move_command(cmd: Dictionary) -> void:
 		e["move_target"] = target
 		e["has_move_target"] = true
 		entities[id] = e
-		print("[Sim] set move target for ", id, " -> ", target)
+		if DEBUG:
+			print("[Sim] set move target for ", id, " -> ", target)
 
 func _handle_build_command(cmd: Dictionary) -> void:
 	var building_def_id: StringName = cmd.get("building_def", &"") as StringName
@@ -113,7 +119,8 @@ func _handle_build_command(cmd: Dictionary) -> void:
 	var needed_money: float = building_def.cost_money
 	var needed_metal: float = building_def.cost_metal
 	if get_resource(&"money") < needed_money or get_resource(&"metal") < needed_metal:
-		print("[Build] Not enough resources for ", String(building_def_id))
+		if DEBUG:
+			print("[Build] Not enough resources for ", String(building_def_id))
 		return
 
 	set_resource(&"money", get_resource(&"money") - needed_money)
@@ -131,12 +138,14 @@ func _handle_build_command(cmd: Dictionary) -> void:
 	e["assigned_clankers"] = [] as Array[int]
 	entities[entity_id] = e
 	emit_signal("entity_updated", entity_id)
-	print("[Build] accepted def=", String(building_def_id), " id=", entity_id, " money=", get_resource(&"money"), " metal=", get_resource(&"metal"))
+	if DEBUG:
+		print("[Build] accepted def=", String(building_def_id), " id=", entity_id, " money=", get_resource(&"money"), " metal=", get_resource(&"metal"))
 
 func _handle_launch_robot_command() -> void:
 	if not has_completed_launchpad():
 		if not _launchpad_warning_printed:
-			print("[Launch] blocked: no completed launchpad")
+			if DEBUG:
+				print("[Launch] blocked: no completed launchpad")
 			_launchpad_warning_printed = true
 		return
 	_launchpad_warning_printed = false
@@ -147,12 +156,14 @@ func _handle_launch_robot_command() -> void:
 	spawn_entity(&"worker", spawn_pos + Vector2(20.0, 0.0), 1, &"unit")
 	spawn_entity(&"worker", spawn_pos + Vector2(36.0, 12.0), 1, &"unit")
 	spawn_entity(&"worker", spawn_pos + Vector2(36.0, -12.0), 1, &"unit")
-	print("[Launch] robot drop success: money=", get_resource(&"money"), " clankers+3")
+	if DEBUG:
+		print("[Launch] robot drop success: money=", get_resource(&"money"), " clankers+3")
 
 func _handle_launch_earth_mission_command() -> void:
 	if not has_completed_launchpad():
 		if not _launchpad_warning_printed:
-			print("[Launch] blocked: no completed launchpad")
+			if DEBUG:
+				print("[Launch] blocked: no completed launchpad")
 			_launchpad_warning_printed = true
 		return
 	_launchpad_warning_printed = false
@@ -160,7 +171,8 @@ func _handle_launch_earth_mission_command() -> void:
 		return
 	set_resource(&"money", get_resource(&"money") - 2.0)
 	money_rate_per_sec += 0.05 / 60.0
-	print("[Launch] earth mission success: money=", get_resource(&"money"), " rate=", money_rate_per_sec)
+	if DEBUG:
+		print("[Launch] earth mission success: money=", get_resource(&"money"), " rate=", money_rate_per_sec)
 
 func _handle_scrap_broken_command(cmd: Dictionary) -> void:
 	var broken_id: int = int(cmd.get("broken_id", -1))
@@ -196,7 +208,8 @@ func _handle_scrap_broken_command(cmd: Dictionary) -> void:
 			nearest_id = candidate_id
 
 	if nearest_id <= 0:
-		print("[Scrap] no available clanker for broken id=", broken_id)
+		if DEBUG:
+			print("[Scrap] no available clanker for broken id=", broken_id)
 		return
 
 	var clanker: Dictionary = entities[nearest_id] as Dictionary
@@ -219,7 +232,8 @@ func _handle_scrap_broken_command(cmd: Dictionary) -> void:
 	broken["is_being_towed"] = true
 	broken["towed_by_unit_id"] = nearest_id
 	entities[broken_id] = broken
-	print("[Scrap] clanker ", nearest_id, " towing broken ", broken_id)
+	if DEBUG:
+		print("[Scrap] clanker ", nearest_id, " towing broken ", broken_id)
 	emit_signal("entity_updated", nearest_id)
 	emit_signal("entity_updated", broken_id)
 
@@ -340,7 +354,10 @@ func _update_constructing_buildings() -> void:
 					unit["job"] = {"type": &"idle"}
 					entities[unit_id] = unit
 					emit_signal("entity_updated", unit_id)
-			print("[Build] completed entity=", id)
+			var completed_pos: Vector2 = e.get("pos", Vector2.ZERO) as Vector2
+			emit_signal("fx_burst", completed_pos, &"sparkle")
+			if DEBUG:
+				print("[Build] completed entity=", id)
 			continue
 		entities[id] = e
 		emit_signal("entity_updated", id)
@@ -383,7 +400,8 @@ func _update_clanker_degradation() -> void:
 			e["has_move_target"] = false
 			e["is_being_towed"] = false
 			e["towed_by_unit_id"] = -1
-			print("[Clanker] broke: id=", id)
+			if DEBUG:
+				print("[Clanker] broke: id=", id)
 			should_emit_update = true
 
 		entities[id] = e

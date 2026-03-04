@@ -21,8 +21,18 @@ func start_new_match() -> void:
 	var command_dome_id: int = Sim.spawn_entity(&"command_dome", start_pos + Vector2(72.0, 24.0), 1, &"building")
 	var worker_id: int = Sim.spawn_entity(&"worker", start_pos + Vector2(54.0, 76.0), 1, &"unit")
 	Sim.spawn_entity(&"scrap_heap", start_pos + Vector2(128.0, 40.0), 1, &"building")
-	print("[Game] Sim.entities.size=", Sim.entities.size())
 	_verify_spawn_kinds(lander_id, command_dome_id, [worker_id])
+
+	var fx_pos: Vector2 = start_pos
+	var lander: Dictionary = Sim.get_entity(lander_id)
+	if not lander.is_empty():
+		fx_pos = lander.get("pos", fx_pos) as Vector2
+	else:
+		var command_dome: Dictionary = Sim.get_entity(command_dome_id)
+		if not command_dome.is_empty():
+			fx_pos = command_dome.get("pos", fx_pos) as Vector2
+	Sim.emit_signal("fx_popup", fx_pos, "First landing successful!", &"info")
+	Sim.emit_signal("fx_burst", fx_pos, &"sparkle")
 
 func load_match(path: String) -> void:
 	push_warning("load_match is not implemented yet: %s" % path)
