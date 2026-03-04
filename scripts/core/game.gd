@@ -11,19 +11,25 @@ func start_new_match() -> void:
 	Sim.reset()
 	current_match_id = "new_match"
 
-	Sim.set_resource(&"regolith", 0.0)
-	Sim.set_resource(&"metal", 40.0)
-	Sim.set_resource(&"power", 0.0)
-	Sim.set_resource(&"oxygen", 0.0)
+	Sim.set_resource(&"credits", 2000.0)
+	Sim.set_resource(&"regolith", 80.0)
+	Sim.set_resource(&"metal", 30.0)
+	Sim.set_resource(&"power", 30.0)
+	Sim.set_resource(&"oxygen", 30.0)
 
-	var start_pos: Vector2 = Vector2(240.0, 180.0)
-	var lander_id: int = Sim.spawn_entity(&"hls_lander", start_pos, 1, &"building")
-	var command_dome_id: int = Sim.spawn_entity(&"command_dome", start_pos + Vector2(72.0, 24.0), 1, &"building")
-	var worker_id: int = Sim.spawn_entity(&"worker", start_pos + Vector2(54.0, 76.0), 1, &"unit")
-	Sim.spawn_entity(&"scrap_heap", start_pos + Vector2(128.0, 40.0), 1, &"building")
-	_verify_spawn_kinds(lander_id, command_dome_id, [worker_id])
+	var lander_pos: Vector2 = Vector2(240.0, 180.0)
+	var lander_id: int = Sim.spawn_entity(&"hls_lander", lander_pos, 1, &"building")
+	var command_dome_id: int = Sim.spawn_entity(&"command_dome", lander_pos + Vector2(90.0, 40.0), 1, &"building")
+	Sim.spawn_entity(&"scrap_heap", lander_pos + Vector2(120.0, 20.0), 1, &"building")
+	var worker_a_id: int = Sim.spawn_entity(&"worker", lander_pos + Vector2(-30.0, 70.0), 1, &"unit")
+	var worker_b_id: int = Sim.spawn_entity(&"worker", lander_pos + Vector2(30.0, 70.0), 1, &"unit")
+	Sim.spawn_entity(&"starter_crate", lander_pos + Vector2(-70.0, -30.0), 1, &"building")
+	Sim.spawn_entity(&"starter_crate", lander_pos + Vector2(-40.0, -50.0), 1, &"building")
+	Sim.spawn_entity(&"starter_crate", lander_pos + Vector2(-10.0, -40.0), 1, &"building")
+	_verify_spawn_kinds(lander_id, command_dome_id, [worker_a_id, worker_b_id])
+	print("[Game] spawned entities: ", Sim.entities.size())
 
-	var fx_pos: Vector2 = start_pos
+	var fx_pos: Vector2 = lander_pos
 	var lander: Dictionary = Sim.get_entity(lander_id)
 	if not lander.is_empty():
 		fx_pos = lander.get("pos", fx_pos) as Vector2

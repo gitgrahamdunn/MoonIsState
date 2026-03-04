@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3 uid="uid://dwx53ibq7j4kj"]
+[gd_scene load_steps=10 format=3 uid="uid://dwx53ibq7j4kj"]
 
 [ext_resource type="Script" path="res://scripts/core/main.gd" id="1_3aw8l"]
 [ext_resource type="Script" path="res://scripts/core/world_spawner.gd" id="2_wv6qq"]
@@ -8,6 +8,8 @@
 [ext_resource type="Script" path="res://scripts/components/ground.gd" id="6_f3j0w"]
 [ext_resource type="Script" path="res://scripts/ui/hover_manager.gd" id="7_hovm"]
 [ext_resource type="PackedScene" path="res://scenes/ui/FXLayer.tscn" id="8_fx"]
+[ext_resource type="PackedScene" path="res://scenes/ui/ObjectivesPanel.tscn" id="9_obj"]
+[ext_resource type="Script" path="res://scripts/ui/objectives_controller.gd" id="10_objc"]
 
 [node name="Main" type="Node2D"]
 script = ExtResource("1_3aw8l")
@@ -33,6 +35,8 @@ script = ExtResource("2_wv6qq")
 
 [node name="FXLayer" parent="UILayer" instance=ExtResource("8_fx")]
 
+[node name="ObjectivesPanel" parent="UILayer/HUD" instance=ExtResource("9_obj")]
+
 [node name="SelectionOverlay" type="Control" parent="UILayer"]
 layout_mode = 3
 anchors_preset = 15
@@ -50,3 +54,7 @@ world_path = NodePath("../World")
 [node name="HoverManager" type="Node" parent="."]
 script = ExtResource("7_hovm")
 world_path = NodePath("../World")
+
+[node name="ObjectivesController" type="Node" parent="."]
+script = ExtResource("10_objc")
+panel_path = NodePath("UILayer/HUD/ObjectivesPanel")

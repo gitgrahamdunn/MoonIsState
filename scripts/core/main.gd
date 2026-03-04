@@ -1,6 +1,6 @@
 extends Node2D
 
-const BUILD_STAMP: String = "dev-0022-fx-feedback"
+const BUILD_STAMP: String = "dev-0023-first-landing-min"
 const PAN_SPEED: float = 320.0
 const CAMERA_ZOOM_LEVELS: Array[float] = [1.0, 2.0, 3.0]
 
@@ -18,6 +18,7 @@ func _ready() -> void:
 	_center_camera_on_lander()
 	_reset_zoom()
 	log_startup_smoke_check()
+	run_smoke_checks()
 	await get_tree().process_frame
 	if hud != null and hud.has_method("set_build_stamp"):
 		hud.call("set_build_stamp", BUILD_STAMP)
@@ -72,6 +73,32 @@ func log_startup_smoke_check() -> void:
 	print("DataDB tech defs loaded: ", DataDB.tech.size())
 	print("Sim ticks per second: ", Sim.TICKS_PER_SECOND)
 	print("Initial entity count after match start: ", Sim.entities.size())
+
+func run_smoke_checks() -> void:
+	var has_fail: bool = false
+	if get_node_or_null("/root/Sim") == null:
+		push_error("SMOKE FAIL: /root/Sim missing")
+		has_fail = true
+	if get_node_or_null("/root/DataDB") == null:
+		push_error("SMOKE FAIL: /root/DataDB missing")
+		has_fail = true
+	if DataDB.buildings.size() < 4:
+		push_error("SMOKE FAIL: DataDB.buildings.size() < 4")
+		has_fail = true
+	if Sim.entities.size() <= 0:
+		push_error("SMOKE FAIL: Sim.entities.size() <= 0")
+		has_fail = true
+	if get_node_or_null("UILayer/HUD/ObjectivesPanel") == null:
+		push_error("SMOKE FAIL: ObjectivesPanel missing at UILayer/HUD/ObjectivesPanel")
+		has_fail = true
+	if get_node_or_null("ObjectivesController") == null:
+		push_error("SMOKE FAIL: ObjectivesController missing")
+		has_fail = true
+	if get_node_or_null("World/WorldSpawner") == null:
+		push_error("SMOKE FAIL: WorldSpawner missing")
+		has_fail = true
+	if not has_fail:
+		print("=== SMOKE OK ===")
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.is_pressed() and not event.is_echo():
