@@ -1,7 +1,5 @@
 extends Control
 
-signal build_button_clicked(building_def_id: StringName)
-
 @onready var top_bar: PanelContainer = $TopBar
 @onready var left_build_panel: PanelContainer = $LeftBuildPanel
 @onready var info_panel: PanelContainer = $InfoPanel
@@ -147,7 +145,44 @@ func _update_objectives() -> void:
 
 func _on_build_clicked(building_def_id: StringName) -> void:
 	print("[HUD] build clicked: %s" % String(building_def_id))
-	emit_signal("build_button_clicked", building_def_id)
+	_enqueue_build_command(building_def_id)
+
+func _enqueue_build_command(building_def_id: StringName) -> void:
+	var builder_id: int = _find_builder_unit_id()
+	if builder_id <= 0:
+		push_warning("[HUD] No clanker available for build command: %s" % String(building_def_id))
+		return
+
+	var builder_entity: Dictionary = Sim.get_entity(builder_id)
+	var builder_pos: Vector2 = builder_entity.get("pos", Vector2.ZERO) as Vector2
+	var build_pos: Vector2 = builder_pos + Vector2(80.0, 0.0)
+	CommandBus.enqueue({
+		"type": "build",
+		"builder_id": builder_id,
+		"building_def": building_def_id,
+		"pos": build_pos,
+	})
+	print("[HUD] Enqueued build def=", String(building_def_id), " builder=", builder_id, " pos=", build_pos)
+
+func _find_builder_unit_id() -> int:
+	var selection_manager: Node = get_tree().get_first_node_in_group("selection_manager")
+	if selection_manager != null:
+		var selected_ids_variant: Variant = selection_manager.get("selected_entity_ids")
+		var selected_ids: Array = selected_ids_variant as Array
+		if selected_ids != null and selected_ids.size() > 0:
+			var selected_id: int = int(selected_ids[0])
+			var selected_entity: Dictionary = Sim.get_entity(selected_id)
+			var selected_kind: StringName = selected_entity.get("kind", &"") as StringName
+			if selected_kind == &"unit":
+				return selected_id
+
+	for entity_id_variant: Variant in Sim.entities.keys():
+		var entity_id: int = int(entity_id_variant)
+		var entity: Dictionary = Sim.entities[entity_id] as Dictionary
+		var kind: StringName = entity.get("kind", &"") as StringName
+		if kind == &"unit":
+			return entity_id
+	return -1
 
 func _get_entity_display_name(entity: Dictionary) -> String:
 	var def_id: StringName = entity.get("def_id", &"") as StringName

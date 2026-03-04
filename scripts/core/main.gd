@@ -10,7 +10,6 @@ const CAMERA_ZOOM_LEVELS: Array[float] = [1.0, 2.0, 3.0]
 @onready var hover_manager: Node = get_node_or_null("HoverManager")
 
 var _zoom_index: int = 0
-var _selected_builder_id: int = -1
 
 func _ready() -> void:
 	_apply_camera_zoom()
@@ -24,8 +23,6 @@ func _ready() -> void:
 		hud.call("set_build_stamp", BUILD_STAMP)
 	if hover_manager != null and hover_manager.has_method("set_context"):
 		hover_manager.call("set_context", self, hud)
-	if hud != null and hud.has_signal("build_button_clicked"):
-		hud.connect("build_button_clicked", Callable(self, "_on_hud_build_button_clicked"))
 
 func _process(delta: float) -> void:
 	var input_vec: Vector2 = Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
@@ -75,53 +72,6 @@ func log_startup_smoke_check() -> void:
 	print("DataDB tech defs loaded: ", DataDB.tech.size())
 	print("Sim ticks per second: ", Sim.TICKS_PER_SECOND)
 	print("Initial entity count after match start: ", Sim.entities.size())
-
-func _on_hud_build_button_clicked(building_def_id: StringName) -> void:
-	var builder_id: int = _find_builder_id()
-	if builder_id <= 0:
-		push_warning("[Build] No worker available to build %s" % String(building_def_id))
-		return
-
-	var build_pos: Vector2 = _get_build_position_near_builder(builder_id)
-	CommandBus.enqueue({
-		"type": "build",
-		"builder_id": builder_id,
-		"building_def": building_def_id,
-		"pos": build_pos,
-	})
-	print("[Main] Enqueued build command def=", String(building_def_id), " builder=", builder_id, " pos=", build_pos)
-
-func _find_builder_id() -> int:
-	if selection_manager != null:
-		var selected_ids_variant: Variant = selection_manager.get("selected_entity_ids")
-		var selected_ids: Array = selected_ids_variant as Array
-		if selected_ids != null and selected_ids.size() > 0:
-			var candidate_id: int = int(selected_ids[0])
-			var selected_entity: Dictionary = Sim.get_entity(candidate_id)
-			var selected_kind: StringName = selected_entity.get("kind", &"") as StringName
-			if selected_kind == &"unit":
-				_selected_builder_id = candidate_id
-				return candidate_id
-
-	if _selected_builder_id > 0:
-		var selected_entity_cached: Dictionary = Sim.get_entity(_selected_builder_id)
-		var selected_kind_cached: StringName = selected_entity_cached.get("kind", &"") as StringName
-		if selected_kind_cached == &"unit":
-			return _selected_builder_id
-
-	for entity_id_variant: Variant in Sim.entities.keys():
-		var entity_id: int = int(entity_id_variant)
-		var entity: Dictionary = Sim.entities[entity_id] as Dictionary
-		var kind: StringName = entity.get("kind", &"") as StringName
-		if kind == &"unit":
-			_selected_builder_id = entity_id
-			return entity_id
-	return -1
-
-func _get_build_position_near_builder(builder_id: int) -> Vector2:
-	var builder: Dictionary = Sim.get_entity(builder_id)
-	var builder_pos: Vector2 = builder.get("pos", Vector2.ZERO) as Vector2
-	return builder_pos + Vector2(80.0, 0.0)
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.is_pressed() and not event.is_echo():
