@@ -13,6 +13,8 @@ signal build_button_clicked(building_def_id: StringName)
 @onready var oxygen_label: Label = $TopBar/TopRow/ResourceRow/OxygenLabel
 @onready var time_label: Label = $TopBar/TopRow/TimeLabel
 @onready var build_stamp_label: Label = $TopBar/TopRow/BuildStampLabel
+@onready var alert_strip: PanelContainer = $AlertStrip
+@onready var alert_strip_label: Label = $AlertStrip/AlertLabel
 
 @onready var selected_label: Label = $InfoPanel/InfoVBox/SelectedLabel
 @onready var status_label: Label = $InfoPanel/InfoVBox/StatusLabel
@@ -53,9 +55,11 @@ func _ready() -> void:
 	Sim.resources_changed.connect(_on_resources_changed)
 	Sim.tick_advanced.connect(_on_tick_advanced)
 	Sim.entity_updated.connect(_on_entity_updated)
+	Sim.alerts_changed.connect(_on_alerts_changed)
 
 	_on_resources_changed(Sim.resources)
 	_on_tick_advanced(Sim.tick_count)
+	_on_alerts_changed([] as Array[String])
 	_show_empty_selection()
 
 func set_build_stamp(build_stamp: String) -> void:
@@ -116,8 +120,15 @@ func _on_entity_updated(entity_id: int) -> void:
 	set_selected_entity(_selected_entity_id)
 
 func _on_build_clicked(building_def_id: StringName) -> void:
-	print("[HUD] build clicked: %s" % String(building_def_id))
 	emit_signal("build_button_clicked", building_def_id)
+
+func _on_alerts_changed(alerts: Array[String]) -> void:
+	if alerts.is_empty():
+		alert_strip.visible = false
+		alert_strip_label.text = ""
+		return
+	alert_strip.visible = true
+	alert_strip_label.text = "  |  ".join(alerts)
 
 func _get_entity_display_name(entity: Dictionary) -> String:
 	var def_id: StringName = entity.get("def_id", &"") as StringName
