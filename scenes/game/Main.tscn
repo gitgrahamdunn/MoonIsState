@@ -1,4 +1,4 @@
-[gd_scene load_steps=6 format=3 uid="uid://dwx53ibq7j4kj"]
+[gd_scene load_steps=7 format=3 uid="uid://dwx53ibq7j4kj"]
 
 [ext_resource type="Script" path="res://scripts/core/main.gd" id="1_3aw8l"]
 [ext_resource type="Script" path="res://scripts/core/world_spawner.gd" id="2_wv6qq"]
@@ -6,6 +6,7 @@
 [ext_resource type="Script" path="res://scripts/ui/selection_overlay.gd" id="4_5vx8x"]
 [ext_resource type="PackedScene" path="res://scenes/ui/HUD.tscn" id="5_hud"]
 [ext_resource type="Script" path="res://scripts/components/ground.gd" id="6_f3j0w"]
+[ext_resource type="Script" path="res://scripts/ui/hover_manager.gd" id="7_hovm"]
 
 [node name="Main" type="Node2D"]
 script = ExtResource("1_3aw8l")
@@ -41,4 +42,8 @@ script = ExtResource("4_5vx8x")
 
 [node name="SelectionManager" type="Node" parent="."]
 script = ExtResource("3_nl0u2")
+world_path = NodePath("../World")
+
+[node name="HoverManager" type="Node" parent="."]
+script = ExtResource("7_hovm")
 world_path = NodePath("../World")

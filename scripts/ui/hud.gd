@@ -24,6 +24,9 @@ signal build_button_clicked(building_def_id: StringName)
 @onready var build_regolith_extractor_button: Button = $LeftBuildPanel/BuildVBox/BuildRegolithExtractorButton
 @onready var build_refinery_button: Button = $LeftBuildPanel/BuildVBox/BuildRefineryButton
 
+@onready var tooltip_panel: PanelContainer = $HoverTooltip
+@onready var tooltip_label: Label = $HoverTooltip/TooltipLabel
+
 var _selected_entity_id: int = -1
 var _last_displayed_second: int = -1
 
@@ -32,6 +35,14 @@ func _ready() -> void:
 	top_bar.mouse_filter = Control.MOUSE_FILTER_STOP
 	left_build_panel.mouse_filter = Control.MOUSE_FILTER_STOP
 	info_panel.mouse_filter = Control.MOUSE_FILTER_STOP
+	tooltip_panel.visible = false
+	tooltip_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	_setup_build_button(build_hls_button, "Build HLS Lander\nLanding support and logistics hub")
+	_setup_build_button(build_command_dome_button, "Build Command Dome\nColony command and control center")
+	_setup_build_button(build_solar_array_button, "Build Solar Array\nProduces Power: +2/s")
+	_setup_build_button(build_regolith_extractor_button, "Build Regolith Extractor\nProduces Regolith: +2/s")
+	_setup_build_button(build_refinery_button, "Build Refinery\nConverts Regolith into Metal")
 
 	build_hls_button.pressed.connect(func() -> void: _on_build_clicked(&"hls_lander"))
 	build_command_dome_button.pressed.connect(func() -> void: _on_build_clicked(&"command_dome"))
@@ -50,6 +61,14 @@ func _ready() -> void:
 func set_build_stamp(build_stamp: String) -> void:
 	build_stamp_label.text = build_stamp
 
+func show_tooltip(text: String, screen_pos: Vector2) -> void:
+	tooltip_label.text = text
+	tooltip_panel.position = screen_pos
+	tooltip_panel.visible = true
+
+func hide_tooltip() -> void:
+	tooltip_panel.visible = false
+
 func set_selected_entity(entity_id: int) -> void:
 	_selected_entity_id = entity_id
 	if _selected_entity_id <= 0:
@@ -65,6 +84,11 @@ func set_selected_entity(entity_id: int) -> void:
 	selected_label.text = "Selected: %s" % display_name
 	status_label.text = "Status: %s" % _get_entity_status_line(entity)
 	stats_label.text = "Stats: %s" % _get_entity_stats_line(entity)
+
+func _setup_build_button(button: Button, tooltip: String) -> void:
+	button.mouse_filter = Control.MOUSE_FILTER_STOP
+	button.focus_mode = Control.FOCUS_NONE
+	button.tooltip_text = tooltip
 
 func _on_resources_changed(new_resources: Dictionary) -> void:
 	credits_label.text = "$ Credits: %.2f" % float(new_resources.get(&"money", 0.0))

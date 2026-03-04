@@ -5,6 +5,7 @@ const AssetFactory = preload("res://scripts/core/asset_factory.gd")
 @export var entity_id: int = -1
 
 var _selected: bool = false
+var _hovered: bool = false
 
 func _ready() -> void:
 	add_to_group("unit_views")
@@ -24,6 +25,12 @@ func set_selected(v: bool) -> void:
 	if _selected == v:
 		return
 	_selected = v
+	queue_redraw()
+
+func set_hovered(v: bool) -> void:
+	if _hovered == v:
+		return
+	_hovered = v
 	queue_redraw()
 
 func _draw() -> void:
@@ -54,8 +61,11 @@ func _draw() -> void:
 		draw_line(Vector2(-6.0, -6.0), Vector2(6.0, 6.0), Color(1.0, 0.2, 0.2, 1.0), 2.0)
 		draw_line(Vector2(-6.0, 6.0), Vector2(6.0, -6.0), Color(1.0, 0.2, 0.2, 1.0), 2.0)
 
+	if _hovered:
+		draw_arc(Vector2.ZERO, 20.0, 0.0, TAU, 32, Color(1.0, 0.9, 0.2, 0.9), 2.0)
+
 	if _selected:
-		draw_arc(Vector2.ZERO, 22.0, 0.0, TAU, 32, Color(1.0, 1.0, 1.0, 1.0), 2.0)
+		draw_arc(Vector2.ZERO, 24.0, 0.0, TAU, 32, Color(0.2, 1.0, 0.45, 1.0), 2.0)
 
 	_draw_direction_indicator()
 

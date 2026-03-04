@@ -1,12 +1,13 @@
 extends Node2D
 
-const BUILD_STAMP: String = "dev-0018-hud-polish"
+const BUILD_STAMP: String = "dev-0019-hover-ground"
 const PAN_SPEED: float = 320.0
 const CAMERA_ZOOM_LEVELS: Array[float] = [1.0, 2.0, 3.0]
 
 @onready var hud: Control = get_node_or_null("UILayer/HUD") as Control
 @onready var selection_manager: Node = get_node_or_null("SelectionManager")
 @onready var world_camera: Camera2D = get_node_or_null("World/WorldCamera") as Camera2D
+@onready var hover_manager: Node = get_node_or_null("HoverManager")
 
 var _zoom_index: int = 0
 
@@ -20,6 +21,8 @@ func _ready() -> void:
 	await get_tree().process_frame
 	if hud != null and hud.has_method("set_build_stamp"):
 		hud.call("set_build_stamp", BUILD_STAMP)
+	if hover_manager != null and hover_manager.has_method("set_context"):
+		hover_manager.call("set_context", self, hud)
 
 func _process(delta: float) -> void:
 	var input_vec: Vector2 = Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
