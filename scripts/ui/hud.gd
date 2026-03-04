@@ -95,7 +95,7 @@ func _setup_build_button(button: Button, tooltip: String) -> void:
 	button.tooltip_text = tooltip
 
 func _on_resources_changed(new_resources: Dictionary) -> void:
-	credits_label.text = "$ Credits: %.2f" % float(new_resources.get(&"money", 0.0))
+	credits_label.text = "$ Credits: %.2f" % float(new_resources.get(&"credits", 0.0))
 	regolith_label.text = "R Regolith: %.1f" % float(new_resources.get(&"regolith", 0.0))
 	metal_label.text = "M Metal: %.1f" % float(new_resources.get(&"metal", 0.0))
 	power_label.text = "P Power: %.1f" % float(new_resources.get(&"power", 0.0))
