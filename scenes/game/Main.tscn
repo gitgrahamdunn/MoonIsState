@@ -30,9 +30,10 @@ render_target_update_mode = 4
 [node name="Ground" type="Node2D" parent="WorldViewportContainer/WorldViewport/World"]
 script = ExtResource("6_f3j0w")
 
-[node name="Camera2D" type="Camera2D" parent="WorldViewportContainer/WorldViewport/World"]
+[node name="WorldCamera" type="Camera2D" parent="WorldViewportContainer/WorldViewport/World"]
 position = Vector2(640, 360)
 enabled = true
+zoom = Vector2(1, 1)
 
 [node name="WorldSpawner" type="Node2D" parent="WorldViewportContainer/WorldViewport/World"]
 script = ExtResource("2_wv6qq")
